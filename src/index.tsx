@@ -96,7 +96,7 @@ app.get('/', (c) => {
           <ul class="space-y-3 text-gray-300">
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>Listen to 30 seconds of a random song from Spotify's library</span>
+              <span>Listen to 30 seconds of a random song from Spotify</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
@@ -108,11 +108,11 @@ app.get('/', (c) => {
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>📱 Works on mobile! Uses 30-second song previews</span>
+              <span>🖥️ <strong>Desktop</strong>: Works automatically with Spotify Premium</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>🖥️ Desktop: Full songs with Spotify Premium account</span>
+              <span>📱 <strong>Mobile</strong>: Open Spotify app first, start playing any song, then come back here!</span>
             </li>
           </ul>
         </div>
@@ -226,6 +226,67 @@ app.get('/api/token', (c) => {
   }
   
   return c.json({ access_token: accessToken })
+})
+
+// API: Get user's available Spotify devices
+app.get('/api/devices', async (c) => {
+  const accessToken = getCookie(c, 'spotify_access_token')
+  
+  if (!accessToken) {
+    return c.json({ error: 'Not authenticated' }, 401)
+  }
+  
+  try {
+    const devicesResponse = await fetch('https://api.spotify.com/v1/me/player/devices', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    
+    const data = await devicesResponse.json() as any
+    return c.json(data)
+  } catch (error) {
+    console.error('Error fetching devices:', error)
+    return c.json({ error: 'Failed to fetch devices' }, 500)
+  }
+})
+
+// API: Play track on specific device or active device
+app.post('/api/play', async (c) => {
+  const accessToken = getCookie(c, 'spotify_access_token')
+  
+  if (!accessToken) {
+    return c.json({ error: 'Not authenticated' }, 401)
+  }
+  
+  try {
+    const body = await c.req.json() as any
+    const { uri, device_id } = body
+    
+    // Build URL - if device_id provided, use it, otherwise play on active device
+    const url = device_id 
+      ? `https://api.spotify.com/v1/me/player/play?device_id=${device_id}`
+      : 'https://api.spotify.com/v1/me/player/play'
+    
+    const playResponse = await fetch(url, {
+      method: 'PUT',
+      body: JSON.stringify({ uris: [uri] }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    
+    if (playResponse.status === 204 || playResponse.status === 200) {
+      return c.json({ success: true })
+    } else {
+      const errorData = await playResponse.json() as any
+      return c.json({ error: errorData.error?.message || 'Failed to play' }, playResponse.status)
+    }
+  } catch (error) {
+    console.error('Error playing track:', error)
+    return c.json({ error: 'Failed to play track' }, 500)
+  }
 })
 
 // API: Get random track

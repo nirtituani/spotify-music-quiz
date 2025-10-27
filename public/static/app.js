@@ -9,7 +9,7 @@ let gameState = {
   timeLeft: 30,
   player: null,
   deviceId: null,
-  audioElement: null,
+  userDevices: [],
   isMobile: false
 };
 
@@ -43,19 +43,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
+  // Check for available Spotify devices (including mobile app)
+  await checkUserDevices();
+  
   // Initialize Spotify Web Playback SDK ONLY on desktop
   if (!gameState.isMobile && window.Spotify) {
     await initializeSpotifyPlayer();
   } else {
-    console.log('Using preview mode for mobile or SDK not available');
-  }
-  
-  // Create audio element for mobile preview playback
-  if (gameState.isMobile) {
-    gameState.audioElement = new Audio();
-    gameState.audioElement.volume = 0.5;
+    console.log('Mobile mode: Will use Spotify app or active device for playback');
   }
 });
+
+// Check user's available Spotify devices
+async function checkUserDevices() {
+  try {
+    const response = await fetch('/api/devices');
+    const data = await response.json();
+    
+    if (data.devices) {
+      gameState.userDevices = data.devices;
+      console.log('Available Spotify devices:', gameState.userDevices);
+      
+      // Check if user has an active device
+      const activeDevice = data.devices.find(d => d.is_active);
+      if (activeDevice) {
+        console.log('Active device found:', activeDevice.name, activeDevice.type);
+      } else if (data.devices.length > 0) {
+        console.log('Devices available but none active. Will attempt to play on first available device.');
+      } else {
+        console.log('No Spotify devices found. User needs to open Spotify app.');
+      }
+    }
+  } catch (error) {
+    console.error('Error checking devices:', error);
+  }
+}
 
 // Initialize Spotify Player (Desktop only)
 async function initializeSpotifyPlayer() {
@@ -142,8 +164,17 @@ async function startRound() {
     startBtn.classList.add('hidden');
     skipBtn.classList.remove('hidden');
     
-    // Play track (mobile uses preview_url, desktop uses Web Playback SDK)
-    await playTrack(track);
+    // Play track
+    const playSuccess = await playTrack(track);
+    
+    if (!playSuccess) {
+      showMessage('⚠️ Please open Spotify app on your device and start playing any song, then try again.', 'error');
+      startBtn.disabled = false;
+      startBtn.classList.remove('hidden');
+      skipBtn.classList.add('hidden');
+      gameState.isPlaying = false;
+      return;
+    }
     
     // Start timer
     startTimer();
@@ -158,66 +189,113 @@ async function startRound() {
 
 // Play track - handles both mobile and desktop
 async function playTrack(track) {
-  // Mobile: Use preview_url with HTML5 Audio
-  if (gameState.isMobile || !gameState.deviceId) {
-    console.log('Using preview URL for playback');
-    
-    if (!track.preview_url) {
-      showMessage('No preview available for this song. Skipping...', 'error');
-      setTimeout(() => skipRound(), 2000);
-      return;
-    }
-    
+  // Desktop: Use Spotify Web Playback SDK
+  if (!gameState.isMobile && gameState.deviceId) {
     try {
-      if (gameState.audioElement) {
-        gameState.audioElement.src = track.preview_url;
-        await gameState.audioElement.play();
-        console.log('Preview playing on mobile');
+      const response = await fetch('/api/play', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uri: track.uri,
+          device_id: gameState.deviceId
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Playing via Web Playback SDK on desktop');
+        return true;
+      } else {
+        console.error('Play failed:', result.error);
+        return false;
       }
     } catch (error) {
-      console.error('Error playing preview:', error);
-      showMessage('Error playing audio. Please try again.', 'error');
+      console.error('Error playing track:', error);
+      return false;
     }
-    return;
   }
   
-  // Desktop: Use Spotify Web Playback SDK
+  // Mobile: Play on user's active Spotify device (their phone's Spotify app)
   try {
-    const tokenResponse = await fetch('/api/token');
-    const tokenData = await tokenResponse.json();
-    const token = tokenData.access_token;
+    // Refresh device list
+    await checkUserDevices();
     
-    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${gameState.deviceId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ uris: [track.uri] }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    console.log('Playing via Web Playback SDK on desktop');
-  } catch (error) {
-    console.error('Error playing track:', error);
-    // Fallback to preview if Web Playback fails
-    if (track.preview_url && gameState.audioElement) {
-      console.log('Falling back to preview URL');
-      gameState.audioElement.src = track.preview_url;
-      await gameState.audioElement.play();
+    // Try to find active device or use first available
+    let targetDevice = gameState.userDevices.find(d => d.is_active);
+    
+    if (!targetDevice && gameState.userDevices.length > 0) {
+      // No active device, but devices exist - use first available
+      targetDevice = gameState.userDevices[0];
+      console.log('No active device, attempting to use:', targetDevice.name);
     }
+    
+    if (!targetDevice) {
+      // No devices available at all
+      console.error('No Spotify devices available');
+      return false;
+    }
+    
+    const response = await fetch('/api/play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uri: track.uri,
+        device_id: targetDevice.id
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log('Playing on Spotify device:', targetDevice.name, targetDevice.type);
+      return true;
+    } else {
+      console.error('Play failed:', result.error);
+      
+      // Common error: Device needs to be active first
+      if (result.error && result.error.includes('No active device')) {
+        console.log('No active device - user needs to open Spotify app');
+      }
+      
+      return false;
+    }
+  } catch (error) {
+    console.error('Error playing track on mobile:', error);
+    return false;
   }
 }
 
 // Stop playback
 async function stopPlayback() {
-  // Stop mobile audio
-  if (gameState.audioElement) {
-    gameState.audioElement.pause();
-    gameState.audioElement.currentTime = 0;
+  // Desktop: Stop Web Playback SDK player
+  if (gameState.player) {
+    try {
+      await gameState.player.pause();
+      console.log('Paused Web Playback SDK player');
+    } catch (error) {
+      console.error('Error pausing player:', error);
+    }
   }
   
-  // Stop desktop player
-  if (gameState.player) {
-    gameState.player.pause();
+  // Mobile: Pause via API (will pause user's Spotify app)
+  if (gameState.isMobile) {
+    try {
+      const tokenResponse = await fetch('/api/token');
+      const tokenData = await tokenResponse.json();
+      
+      if (tokenData.access_token) {
+        await fetch('https://api.spotify.com/v1/me/player/pause', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${tokenData.access_token}`
+          }
+        });
+        console.log('Paused Spotify app playback');
+      }
+    } catch (error) {
+      console.error('Error pausing mobile playback:', error);
+    }
   }
 }
 
@@ -265,7 +343,7 @@ async function endRound(earnedPoint) {
   
   // Show answer
   const track = gameState.currentTrack;
-  const modeIndicator = gameState.isMobile ? '📱 Mobile Mode' : '🖥️ Desktop Mode';
+  const modeIndicator = gameState.isMobile ? '📱 Mobile Mode (Premium)' : '🖥️ Desktop Mode';
   songInfo.innerHTML = `
     <div class="text-center">
       <p class="text-sm text-gray-500 mb-1">${modeIndicator}</p>
