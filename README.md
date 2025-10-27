@@ -11,15 +11,15 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 
 ### Currently Completed
 - ✅ Spotify OAuth authentication
-- ✅ Full song playback (Premium accounts)
-- ✅ Round-based scoring system
+- ✅ Full song playback using Web Playback SDK
+- ✅ Round-based scoring system (30-second rounds)
 - ✅ Timer countdown with visual progress bar
 - ✅ Skip functionality (no points awarded)
 - ✅ Responsive design with Tailwind CSS
-- ✅ Spotify Web Playback SDK integration (Desktop)
-- ✅ **Mobile support via Spotify app** 📱
-- ✅ Automatic device detection (mobile vs desktop)
+- ✅ **Desktop-only mode** 🖥️ (mobile shows informative warning)
+- ✅ Automatic device detection
 - ✅ Session management with secure cookies
+- ✅ Random song selection from Spotify's library
 
 ### Functional Entry Points
 - `GET /` - Home page with game interface
@@ -47,16 +47,22 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 
 ## 🎮 How to Play
 
-### 🖥️ Desktop
-1. **Login** with your Spotify Premium account
-2. **Click "Start Round"** - music plays automatically in browser
-3. **Listen** for 30 seconds
-4. **Wait** for timer to end to earn 1 point, or **Skip** for no points
-5. **Keep playing** to increase your score!
+⚠️ **Desktop/Laptop Only** - This quiz requires a computer (not mobile phone/tablet)
 
-### 📱 Mobile
-1. **Open Spotify app** on your phone and start playing any song
-2. **Come back to this website** and login with Spotify Premium
+1. **Login** with your Spotify Premium account
+2. **Click "Start Round"** to begin a round
+3. **Listen** to the 30-second song clip
+4. **Wait** for the timer to end to earn 1 point and see the answer
+5. **Or Skip** anytime to see the answer immediately (no points)
+6. **Keep playing** to increase your score!
+
+### Why Desktop Only?
+
+Mobile browsers are not supported because:
+- The quiz needs to **hide the song name** from you (that's the whole point!)
+- Spotify Web Playback SDK (the only way to hide song names) doesn't work on mobile browsers
+- Preview URLs don't work for all songs
+- Playing through the Spotify app would show the song name and ruin the quiz
 3. **Click "Start Round"** - music will play through your Spotify app
 4. **Listen** for 30 seconds
 5. **Wait** for timer to end to earn 1 point, or **Skip** for no points
@@ -189,11 +195,10 @@ After deployment, add production redirect URI to your Spotify app:
 
 ## 📄 Requirements
 
-- **Spotify Premium Account**: Required for all playback (desktop and mobile)
-- **Modern Browser**: Chrome, Firefox, Safari, or Edge
-- **Active Internet**: For streaming music from Spotify
-- **Mobile**: Spotify app must be installed and playing
-- **Supported Devices**: Desktop browsers, iOS, and Android
+- **Desktop or Laptop Computer**: Windows, Mac, or Linux (**mobile not supported**)
+- **Spotify Premium Account**: Required for Web Playback SDK
+- **Modern Browser**: Chrome, Firefox, Safari, or Edge (desktop versions only)
+- **Active Internet Connection**: For streaming music from Spotify
 
 ## 🐛 Troubleshooting
 
