@@ -108,11 +108,11 @@ app.get('/', (c) => {
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>🖥️ <strong>Desktop</strong>: Works automatically with Spotify Premium</span>
+              <span><strong>Requires Spotify Premium account</strong></span>
             </li>
             <li class="flex items-start">
-              <span class="text-green-500 mr-2">•</span>
-              <span>📱 <strong>Mobile</strong>: Open Spotify app first, start playing any song, then come back here!</span>
+              <span class="text-red-400 mr-2">⚠️</span>
+              <span><strong>Desktop/Laptop Only</strong> - Mobile browsers not supported</span>
             </li>
           </ul>
         </div>
