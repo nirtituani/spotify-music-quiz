@@ -108,7 +108,11 @@ app.get('/', (c) => {
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>Requires Spotify Premium account</span>
+              <span>📱 Works on mobile! Uses 30-second song previews</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-500 mr-2">•</span>
+              <span>🖥️ Desktop: Full songs with Spotify Premium account</span>
             </li>
           </ul>
         </div>

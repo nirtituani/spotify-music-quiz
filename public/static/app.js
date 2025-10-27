@@ -8,11 +8,23 @@ let gameState = {
   timer: null,
   timeLeft: 30,
   player: null,
-  deviceId: null
+  deviceId: null,
+  audioElement: null,
+  isMobile: false
 };
+
+// Detect if mobile device
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         (window.innerWidth <= 768);
+}
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
+  // Detect mobile
+  gameState.isMobile = isMobileDevice();
+  console.log('Mobile device detected:', gameState.isMobile);
+  
   const startBtn = document.getElementById('start-btn');
   const skipBtn = document.getElementById('skip-btn');
   const logoutBtn = document.getElementById('logout-btn');
@@ -31,13 +43,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
-  // Initialize Spotify Web Playback SDK if logged in
-  if (window.Spotify) {
+  // Initialize Spotify Web Playback SDK ONLY on desktop
+  if (!gameState.isMobile && window.Spotify) {
     await initializeSpotifyPlayer();
+  } else {
+    console.log('Using preview mode for mobile or SDK not available');
+  }
+  
+  // Create audio element for mobile preview playback
+  if (gameState.isMobile) {
+    gameState.audioElement = new Audio();
+    gameState.audioElement.volume = 0.5;
   }
 });
 
-// Initialize Spotify Player
+// Initialize Spotify Player (Desktop only)
 async function initializeSpotifyPlayer() {
   try {
     const tokenResponse = await fetch('/api/token');
@@ -122,8 +142,8 @@ async function startRound() {
     startBtn.classList.add('hidden');
     skipBtn.classList.remove('hidden');
     
-    // Play track
-    await playTrack(track.uri);
+    // Play track (mobile uses preview_url, desktop uses Web Playback SDK)
+    await playTrack(track);
     
     // Start timer
     startTimer();
@@ -136,14 +156,32 @@ async function startRound() {
   }
 }
 
-// Play track using Spotify Web Playback SDK
-async function playTrack(uri) {
-  if (!gameState.deviceId) {
-    // Fallback: just show message if SDK not ready
-    console.warn('Spotify player not ready, using preview mode');
+// Play track - handles both mobile and desktop
+async function playTrack(track) {
+  // Mobile: Use preview_url with HTML5 Audio
+  if (gameState.isMobile || !gameState.deviceId) {
+    console.log('Using preview URL for playback');
+    
+    if (!track.preview_url) {
+      showMessage('No preview available for this song. Skipping...', 'error');
+      setTimeout(() => skipRound(), 2000);
+      return;
+    }
+    
+    try {
+      if (gameState.audioElement) {
+        gameState.audioElement.src = track.preview_url;
+        await gameState.audioElement.play();
+        console.log('Preview playing on mobile');
+      }
+    } catch (error) {
+      console.error('Error playing preview:', error);
+      showMessage('Error playing audio. Please try again.', 'error');
+    }
     return;
   }
   
+  // Desktop: Use Spotify Web Playback SDK
   try {
     const tokenResponse = await fetch('/api/token');
     const tokenData = await tokenResponse.json();
@@ -151,19 +189,33 @@ async function playTrack(uri) {
     
     await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${gameState.deviceId}`, {
       method: 'PUT',
-      body: JSON.stringify({ uris: [uri] }),
+      body: JSON.stringify({ uris: [track.uri] }),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
     });
+    console.log('Playing via Web Playback SDK on desktop');
   } catch (error) {
     console.error('Error playing track:', error);
+    // Fallback to preview if Web Playback fails
+    if (track.preview_url && gameState.audioElement) {
+      console.log('Falling back to preview URL');
+      gameState.audioElement.src = track.preview_url;
+      await gameState.audioElement.play();
+    }
   }
 }
 
 // Stop playback
 async function stopPlayback() {
+  // Stop mobile audio
+  if (gameState.audioElement) {
+    gameState.audioElement.pause();
+    gameState.audioElement.currentTime = 0;
+  }
+  
+  // Stop desktop player
   if (gameState.player) {
     gameState.player.pause();
   }
@@ -213,8 +265,10 @@ async function endRound(earnedPoint) {
   
   // Show answer
   const track = gameState.currentTrack;
+  const modeIndicator = gameState.isMobile ? '📱 Mobile Mode' : '🖥️ Desktop Mode';
   songInfo.innerHTML = `
     <div class="text-center">
+      <p class="text-sm text-gray-500 mb-1">${modeIndicator}</p>
       <p class="text-xl mb-2">${earnedPoint ? '✅ Round Complete! +1 Point' : '⏭️ Skipped - No Points'}</p>
       <p class="text-2xl font-bold text-green-400">${track.name}</p>
       <p class="text-lg text-gray-300">by ${track.artists}</p>
