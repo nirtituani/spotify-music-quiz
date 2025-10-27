@@ -5,7 +5,7 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 ## 🌐 Live Demo
 
 - **Production**: https://spotify-music-quiz.pages.dev/
-- **GitHub**: (To be added after first push)
+- **GitHub**: https://github.com/nirtituani/spotify-music-quiz
 
 ## ✨ Features
 
