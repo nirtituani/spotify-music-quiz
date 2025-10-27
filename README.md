@@ -16,7 +16,9 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 - ✅ Timer countdown with visual progress bar
 - ✅ Skip functionality (no points awarded)
 - ✅ Responsive design with Tailwind CSS
-- ✅ Spotify Web Playback SDK integration
+- ✅ Spotify Web Playback SDK integration (Desktop)
+- ✅ **Mobile support with preview URLs** 📱
+- ✅ Automatic device detection (mobile vs desktop)
 - ✅ Session management with secure cookies
 
 ### Functional Entry Points
@@ -45,12 +47,17 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 
 ## 🎮 How to Play
 
-1. **Login** with your Spotify Premium account
+1. **Login** with your Spotify account (Premium recommended for desktop)
 2. **Click "Start Round"** to begin a round
 3. **Listen** to the 30-second song clip
 4. **Wait** for the timer to end to earn 1 point and see the answer
 5. **Or Skip** anytime to see the answer immediately (no points)
 6. **Keep playing** to increase your score!
+
+### 📱 Mobile vs Desktop
+
+- **Mobile**: Uses Spotify's 30-second preview clips (works on all devices, no Premium required)
+- **Desktop**: Uses Spotify Web Playback SDK for full song playback (requires Premium account)
 
 ## 🛠️ Tech Stack
 
@@ -177,9 +184,10 @@ After deployment, add production redirect URI to your Spotify app:
 
 ## 📄 Requirements
 
-- **Spotify Premium Account**: Required for Web Playback SDK
+- **Spotify Account**: Free account works on mobile! Premium required for desktop full playback
 - **Modern Browser**: Chrome, Firefox, Safari, or Edge
 - **Active Internet**: For streaming music from Spotify
+- **Mobile Friendly**: Works on iOS and Android devices!
 
 ## 🐛 Troubleshooting
 
