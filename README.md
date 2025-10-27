@@ -11,13 +11,13 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 
 ### Currently Completed
 - ✅ Spotify OAuth authentication
-- ✅ 30-second song preview playback
+- ✅ Full song playback (Premium accounts)
 - ✅ Round-based scoring system
 - ✅ Timer countdown with visual progress bar
 - ✅ Skip functionality (no points awarded)
 - ✅ Responsive design with Tailwind CSS
 - ✅ Spotify Web Playback SDK integration (Desktop)
-- ✅ **Mobile support with preview URLs** 📱
+- ✅ **Mobile support via Spotify app** 📱
 - ✅ Automatic device detection (mobile vs desktop)
 - ✅ Session management with secure cookies
 
@@ -47,17 +47,22 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 
 ## 🎮 How to Play
 
-1. **Login** with your Spotify account (Premium recommended for desktop)
-2. **Click "Start Round"** to begin a round
-3. **Listen** to the 30-second song clip
-4. **Wait** for the timer to end to earn 1 point and see the answer
-5. **Or Skip** anytime to see the answer immediately (no points)
+### 🖥️ Desktop
+1. **Login** with your Spotify Premium account
+2. **Click "Start Round"** - music plays automatically in browser
+3. **Listen** for 30 seconds
+4. **Wait** for timer to end to earn 1 point, or **Skip** for no points
+5. **Keep playing** to increase your score!
+
+### 📱 Mobile
+1. **Open Spotify app** on your phone and start playing any song
+2. **Come back to this website** and login with Spotify Premium
+3. **Click "Start Round"** - music will play through your Spotify app
+4. **Listen** for 30 seconds
+5. **Wait** for timer to end to earn 1 point, or **Skip** for no points
 6. **Keep playing** to increase your score!
 
-### 📱 Mobile vs Desktop
-
-- **Mobile**: Uses Spotify's 30-second preview clips (works on all devices, no Premium required)
-- **Desktop**: Uses Spotify Web Playback SDK for full song playback (requires Premium account)
+**Important**: On mobile, you MUST have the Spotify app open and playing first, then the quiz will control playback.
 
 ## 🛠️ Tech Stack
 
@@ -184,10 +189,11 @@ After deployment, add production redirect URI to your Spotify app:
 
 ## 📄 Requirements
 
-- **Spotify Account**: Free account works on mobile! Premium required for desktop full playback
+- **Spotify Premium Account**: Required for all playback (desktop and mobile)
 - **Modern Browser**: Chrome, Firefox, Safari, or Edge
 - **Active Internet**: For streaming music from Spotify
-- **Mobile Friendly**: Works on iOS and Android devices!
+- **Mobile**: Spotify app must be installed and playing
+- **Supported Devices**: Desktop browsers, iOS, and Android
 
 ## 🐛 Troubleshooting
 
