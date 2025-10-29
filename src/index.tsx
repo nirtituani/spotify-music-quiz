@@ -384,4 +384,50 @@ app.get('/api/random-track', async (c) => {
   }
 })
 
+// API: Get random track (mobile version - accepts Authorization header)
+app.get('/api/mobile/random-track', async (c) => {
+  const authHeader = c.req.header('Authorization')
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return c.json({ error: 'Not authenticated' }, 401)
+  }
+  
+  const accessToken = authHeader.substring(7) // Remove 'Bearer ' prefix
+  
+  try {
+    // Search for random tracks using random characters
+    const randomSearch = String.fromCharCode(97 + Math.floor(Math.random() * 26)) // random a-z
+    const offset = Math.floor(Math.random() * 100)
+    
+    const searchResponse = await fetch(
+      `https://api.spotify.com/v1/search?q=${randomSearch}%25&type=track&limit=50&offset=${offset}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    )
+    
+    const data = await searchResponse.json() as any
+    
+    if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+      const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+      const track = data.tracks.items[randomIndex]
+      
+      return c.json({
+        id: track.id,
+        name: track.name,
+        artists: track.artists.map((a: any) => a.name).join(', '),
+        uri: track.uri,
+        preview_url: track.preview_url
+      })
+    } else {
+      return c.json({ error: 'No tracks found' }, 404)
+    }
+  } catch (error) {
+    console.error('Error fetching random track:', error)
+    return c.json({ error: 'Failed to fetch track', details: String(error) }, 500)
+  }
+})
+
 export default app
