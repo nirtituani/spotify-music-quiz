@@ -237,3 +237,4 @@ MIT License - Feel free to use and modify!
 **Last Updated**: 2025-10-27  
 **Status**: ✅ Active  
 **Version**: 1.0.0
+# Mobile app support added
