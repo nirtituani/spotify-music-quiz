@@ -228,6 +228,57 @@ app.get('/api/token', (c) => {
   return c.json({ access_token: accessToken })
 })
 
+// API: Exchange authorization code for token (for mobile app)
+app.post('/api/auth/token', async (c) => {
+  try {
+    const body = await c.req.json() as any
+    const { code, redirect_uri } = body
+    
+    if (!code) {
+      return c.json({ error: 'No authorization code provided' }, 400)
+    }
+    
+    const clientId = c.env.SPOTIFY_CLIENT_ID || 'YOUR_CLIENT_ID'
+    const clientSecret = c.env.SPOTIFY_CLIENT_SECRET || 'YOUR_CLIENT_SECRET'
+    
+    console.log('Mobile token exchange:', { redirect_uri, clientId })
+    
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`)
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: redirect_uri
+      })
+    })
+    
+    const data = await tokenResponse.json() as any
+    
+    if (data.access_token) {
+      // Return tokens to mobile app (it will store them in AsyncStorage)
+      return c.json({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_in: data.expires_in
+      })
+    } else {
+      console.error('Spotify token error:', data)
+      return c.json({ 
+        error: 'Failed to get access token',
+        details: data.error_description || data.error 
+      }, 400)
+    }
+  } catch (error) {
+    console.error('Error exchanging code:', error)
+    return c.json({ error: 'Failed to authenticate', details: String(error) }, 500)
+  }
+})
+
 // API: Get user's available Spotify devices
 app.get('/api/devices', async (c) => {
   const accessToken = getCookie(c, 'spotify_access_token')
