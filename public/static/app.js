@@ -90,12 +90,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
   
-  // Initialize Spotify Web Playback SDK (Desktop only)
-  if (window.Spotify) {
-    await initializeSpotifyPlayer();
-  } else {
-    console.error('Spotify SDK not loaded');
-  }
+  // Prepare for Spotify SDK initialization (will be called by SDK callback)
+  initializeSpotifyPlayer();
 });
 
 // Lock duration buttons (disable them visually and functionally)
