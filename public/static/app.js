@@ -8,6 +8,7 @@ let gameState = {
   timer: null,
   timeLeft: 30,
   duration: 30,
+  durationLocked: false, // Lock duration after first round starts
   player: null,
   deviceId: null,
   isMobile: false
@@ -53,6 +54,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const durationBtns = document.querySelectorAll('.duration-btn');
   durationBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      // Don't allow changes if duration is locked (game has started)
+      if (gameState.durationLocked) {
+        return;
+      }
+      
       // Update active state
       durationBtns.forEach(b => {
         b.classList.remove('bg-green-700', 'border-green-500');
@@ -82,6 +88,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Spotify SDK not loaded');
   }
 });
+
+// Lock duration buttons (disable them visually and functionally)
+function lockDurationButtons() {
+  const durationBtns = document.querySelectorAll('.duration-btn');
+  durationBtns.forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    btn.classList.remove('hover:bg-green-600', 'hover:bg-gray-600');
+  });
+  console.log('Duration locked at:', gameState.duration === 0 ? 'Full Song' : `${gameState.duration} seconds`);
+}
 
 // Show mobile warning
 function showMobileWarning() {
@@ -174,6 +191,12 @@ async function startRound() {
   
   startBtn.disabled = true;
   startBtn.textContent = 'Loading...';
+  
+  // Lock duration after first round starts
+  if (!gameState.durationLocked) {
+    gameState.durationLocked = true;
+    lockDurationButtons();
+  }
   
   try {
     // Fetch random track
