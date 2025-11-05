@@ -473,26 +473,39 @@ app.get('/api/random-track', async (c) => {
         'chill': 'chill',
         'party': 'party',
         'sad': 'sad',
-        // Regional
-        'israeli': 'israel OR hebrew',
+        // Regional - using tag:hipster to get more diverse/popular results
+        'israeli': 'tag:hipster hebrew',
         'latin': 'genre:latin',
         'k-pop': 'genre:k-pop',
         'french': 'genre:french',
         'arabic': 'genre:arabic'
       };
       
-      const searchQuery = genreQueries[genreKey] || genreKey;
-      const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // a-z
-      const offset = Math.floor(Math.random() * 100);
+      let searchUrl;
       
-      const searchResponse = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}%20${randomChar}&type=track&limit=50&offset=${offset}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
+      if (genreKey === 'israeli') {
+        // Special handling for Israeli music - search for popular Israeli artists
+        const israeliArtists = [
+          'Omer Adam', 'Static and Ben El', 'Netta', 'Sarit Hadad', 
+          'Eyal Golan', 'Mizrahi', 'Ivri Lider', 'Teapacks', 
+          'Infected Mushroom', 'Subliminal', 'Mosh Ben Ari', 'Berry Sakharof',
+          'Ehud Banai', 'Shlomo Artzi', 'Ofra Haza', 'Arik Einstein',
+          'Shalom Hanoch', 'Yasmin Levy', 'Eden Ben Zaken', 'Noa Kirel'
+        ];
+        const randomArtist = israeliArtists[Math.floor(Math.random() * israeliArtists.length)];
+        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomArtist)}&type=track&limit=50`;
+      } else {
+        const searchQuery = genreQueries[genreKey] || genreKey;
+        const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // a-z
+        const offset = Math.floor(Math.random() * 100);
+        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}%20${randomChar}&type=track&limit=50&offset=${offset}`;
+      }
+      
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
         }
-      )
+      })
       
       const data = await searchResponse.json() as any
       
