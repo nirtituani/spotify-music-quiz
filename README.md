@@ -12,7 +12,9 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 ### Currently Completed
 - ✅ Spotify OAuth authentication
 - ✅ Full song playback using Web Playback SDK
-- ✅ Round-based scoring system (30-second rounds)
+- ✅ **Song duration selector** (30 sec, 60 sec, or Full Song)
+- ✅ Duration locked after first round starts (same for all songs)
+- ✅ Round-based scoring system
 - ✅ Timer countdown with visual progress bar
 - ✅ Skip functionality (no points awarded)
 - ✅ Responsive design with Tailwind CSS
@@ -50,11 +52,12 @@ A fun interactive music quiz game that tests your music knowledge using Spotify'
 ⚠️ **Desktop/Laptop Only** - This quiz requires a computer (not mobile phone/tablet)
 
 1. **Login** with your Spotify Premium account
-2. **Click "Start Round"** to begin a round
-3. **Listen** to the 30-second song clip
-4. **Wait** for the timer to end to earn 1 point and see the answer
-5. **Or Skip** anytime to see the answer immediately (no points)
-6. **Keep playing** to increase your score!
+2. **Choose song duration** (30 sec, 60 sec, or Full Song) - you can only choose before the first round!
+3. **Click "Start Round"** to begin a round
+4. **Listen** to the song clip (duration you selected will be used for all rounds)
+5. **Wait** for the timer to end to earn 1 point and see the answer
+6. **Or Skip** anytime to see the answer immediately (no points)
+7. **Keep playing** to increase your score!
 
 ### Why Desktop Only?
 
@@ -86,6 +89,8 @@ Mobile browsers are not supported because:
   - `score`: Player's total score
   - `currentTrack`: Active song details
   - `timeLeft`: Remaining seconds in round
+  - `duration`: Selected song duration (30, 60, or 0 for full song)
+  - `durationLocked`: Whether duration can still be changed
   - `isPlaying`: Game status flag
 
 - **Session Data** (server-side cookies):
@@ -234,7 +239,6 @@ MIT License - Feel free to use and modify!
 
 ---
 
-**Last Updated**: 2025-10-27  
+**Last Updated**: 2025-11-05  
 **Status**: ✅ Active  
-**Version**: 1.0.0
-# Mobile app support added
+**Version**: 1.1.0
