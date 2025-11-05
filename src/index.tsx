@@ -55,6 +55,20 @@ app.get('/', (c) => {
           // Game Area
           <div class="bg-gray-900 bg-opacity-80 rounded-lg p-8 mb-8 border border-green-600">
             <div id="game-area">
+              {/* Playlist Selector */}
+              <div class="mb-6">
+                <label class="block text-center text-gray-300 text-sm mb-3">Select Playlist</label>
+                <div class="flex justify-center">
+                  <select 
+                    id="playlist-selector"
+                    class="bg-gray-700 text-white px-6 py-2 rounded-lg border-2 border-green-500 focus:outline-none focus:border-green-400 cursor-pointer"
+                  >
+                    <option value="random">🎲 Random from Spotify</option>
+                    <option value="loading" disabled>Loading playlists...</option>
+                  </select>
+                </div>
+              </div>
+
               {/* Duration Selector */}
               <div class="mb-6">
                 <label class="block text-center text-gray-300 text-sm mb-3">Song Duration</label>
@@ -124,11 +138,15 @@ app.get('/', (c) => {
           <ul class="space-y-3 text-gray-300">
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
+              <span>Choose a playlist (or use Random from Spotify)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-500 mr-2">•</span>
               <span>Choose your preferred song duration (30 sec, 60 sec, or Full Song)</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>Listen to a random song from Spotify</span>
+              <span>Listen to a random song from your selected source</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
@@ -175,7 +193,7 @@ app.get('/', (c) => {
 app.get('/login', (c) => {
   const clientId = c.env.SPOTIFY_CLIENT_ID || 'YOUR_CLIENT_ID'
   const redirectUri = c.env.SPOTIFY_REDIRECT_URI || 'http://localhost:3000/callback'
-  const scope = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state'
+  const scope = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative'
   
   const authUrl = `https://accounts.spotify.com/authorize?` +
     `client_id=${clientId}&` +
@@ -372,6 +390,44 @@ app.post('/api/play', async (c) => {
   }
 })
 
+// API: Get user's playlists
+app.get('/api/playlists', async (c) => {
+  const accessToken = getCookie(c, 'spotify_access_token')
+  
+  if (!accessToken) {
+    return c.json({ error: 'Not authenticated' }, 401)
+  }
+  
+  try {
+    const playlistsResponse = await fetch(
+      'https://api.spotify.com/v1/me/playlists?limit=50',
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      }
+    )
+    
+    const data = await playlistsResponse.json() as any
+    
+    if (data.items) {
+      const playlists = data.items.map((playlist: any) => ({
+        id: playlist.id,
+        name: playlist.name,
+        tracks_total: playlist.tracks.total,
+        images: playlist.images
+      }))
+      
+      return c.json({ playlists })
+    } else {
+      return c.json({ error: 'No playlists found' }, 404)
+    }
+  } catch (error) {
+    console.error('Error fetching playlists:', error)
+    return c.json({ error: 'Failed to fetch playlists' }, 500)
+  }
+})
+
 // API: Get random track
 app.get('/api/random-track', async (c) => {
   const accessToken = getCookie(c, 'spotify_access_token')
@@ -380,26 +436,55 @@ app.get('/api/random-track', async (c) => {
     return c.json({ error: 'Not authenticated' }, 401)
   }
   
+  const playlistId = c.req.query('playlist_id')
+  
   try {
-    // Search for random tracks using random characters
-    const randomSearch = String.fromCharCode(97 + Math.floor(Math.random() * 26)) // random a-z
-    const offset = Math.floor(Math.random() * 100)
+    let track;
     
-    const searchResponse = await fetch(
-      `https://api.spotify.com/v1/search?q=${randomSearch}%25&type=track&limit=50&offset=${offset}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
+    if (playlistId && playlistId !== 'random') {
+      // Get random track from specific playlist
+      const playlistResponse = await fetch(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
         }
-      }
-    )
-    
-    const data = await searchResponse.json() as any
-    
-    if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
-      const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
-      const track = data.tracks.items[randomIndex]
+      )
       
+      const playlistData = await playlistResponse.json() as any
+      
+      if (playlistData.items && playlistData.items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * playlistData.items.length)
+        track = playlistData.items[randomIndex].track
+      } else {
+        return c.json({ error: 'No tracks found in playlist' }, 404)
+      }
+    } else {
+      // Search for random tracks using random characters (default behavior)
+      const randomSearch = String.fromCharCode(97 + Math.floor(Math.random() * 26)) // random a-z
+      const offset = Math.floor(Math.random() * 100)
+      
+      const searchResponse = await fetch(
+        `https://api.spotify.com/v1/search?q=${randomSearch}%25&type=track&limit=50&offset=${offset}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        }
+      )
+      
+      const data = await searchResponse.json() as any
+      
+      if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+        track = data.tracks.items[randomIndex]
+      } else {
+        return c.json({ error: 'No tracks found' }, 404)
+      }
+    }
+    
+    if (track) {
       return c.json({
         id: track.id,
         name: track.name,
@@ -408,7 +493,7 @@ app.get('/api/random-track', async (c) => {
         preview_url: track.preview_url
       })
     } else {
-      return c.json({ error: 'No tracks found' }, 404)
+      return c.json({ error: 'No track found' }, 404)
     }
   } catch (error) {
     console.error('Error fetching random track:', error)

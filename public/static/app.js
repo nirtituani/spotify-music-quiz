@@ -9,6 +9,8 @@ let gameState = {
   timeLeft: 30,
   duration: 30,
   durationLocked: false, // Lock duration after first round starts
+  playlistId: 'random', // Selected playlist ID ('random' = default)
+  playlistLocked: false, // Lock playlist after first round starts
   player: null,
   deviceId: null,
   isMobile: false
@@ -90,9 +92,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
   
+  // Playlist selector
+  const playlistSelector = document.getElementById('playlist-selector');
+  if (playlistSelector) {
+    // Load user's playlists
+    loadPlaylists();
+    
+    // Handle playlist selection
+    playlistSelector.addEventListener('change', (e) => {
+      if (gameState.playlistLocked) {
+        // Reset to current selection if locked
+        e.target.value = gameState.playlistId;
+        return;
+      }
+      
+      gameState.playlistId = e.target.value;
+      console.log('Playlist changed to:', gameState.playlistId);
+    });
+  }
+  
   // Prepare for Spotify SDK initialization (will be called by SDK callback)
   initializeSpotifyPlayer();
 });
+
+// Load user's playlists from Spotify
+async function loadPlaylists() {
+  try {
+    const response = await fetch('/api/playlists');
+    const data = await response.json();
+    
+    const playlistSelector = document.getElementById('playlist-selector');
+    if (!playlistSelector) return;
+    
+    if (data.playlists && data.playlists.length > 0) {
+      // Remove loading option
+      playlistSelector.innerHTML = '<option value="random">🎲 Random from Spotify</option>';
+      
+      // Add user's playlists
+      data.playlists.forEach(playlist => {
+        const option = document.createElement('option');
+        option.value = playlist.id;
+        option.textContent = `${playlist.name} (${playlist.tracks_total} songs)`;
+        playlistSelector.appendChild(option);
+      });
+      
+      console.log('Loaded', data.playlists.length, 'playlists');
+    } else {
+      playlistSelector.innerHTML = '<option value="random">🎲 Random from Spotify</option>';
+      console.log('No playlists found');
+    }
+  } catch (error) {
+    console.error('Error loading playlists:', error);
+    const playlistSelector = document.getElementById('playlist-selector');
+    if (playlistSelector) {
+      playlistSelector.innerHTML = '<option value="random">🎲 Random from Spotify</option>';
+    }
+  }
+}
+
+// Lock playlist selector (disable it visually and functionally)
+function lockPlaylistSelector() {
+  const playlistSelector = document.getElementById('playlist-selector');
+  if (playlistSelector) {
+    playlistSelector.disabled = true;
+    playlistSelector.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+  console.log('Playlist locked at:', gameState.playlistId === 'random' ? 'Random from Spotify' : gameState.playlistId);
+}
 
 // Lock duration buttons (disable them visually and functionally)
 function lockDurationButtons() {
@@ -205,15 +271,23 @@ async function startRound() {
   startBtn.disabled = true;
   startBtn.textContent = 'Loading...';
   
-  // Lock duration after first round starts
+  // Lock duration and playlist after first round starts
   if (!gameState.durationLocked) {
     gameState.durationLocked = true;
     lockDurationButtons();
   }
   
+  if (!gameState.playlistLocked) {
+    gameState.playlistLocked = true;
+    lockPlaylistSelector();
+  }
+  
   try {
-    // Fetch random track
-    const response = await fetch('/api/random-track');
+    // Fetch random track from selected playlist
+    const url = gameState.playlistId === 'random' 
+      ? '/api/random-track' 
+      : `/api/random-track?playlist_id=${gameState.playlistId}`;
+    const response = await fetch(url);
     const track = await response.json();
     
     if (track.error) {
