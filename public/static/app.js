@@ -124,23 +124,64 @@ async function loadPlaylists() {
     const playlistSelector = document.getElementById('playlist-selector');
     if (!playlistSelector) return;
     
+    // Start with default option and curated playlists
+    playlistSelector.innerHTML = `
+      <option value="random">🎲 Random from Spotify</option>
+      <optgroup label="━━━ Decades ━━━">
+        <option value="genre:60s">🎸 60s Hits</option>
+        <option value="genre:70s">🕺 70s Classics</option>
+        <option value="genre:80s">📼 80s Pop</option>
+        <option value="genre:90s">💿 90s Favorites</option>
+        <option value="genre:00s">📱 2000s Hits</option>
+        <option value="genre:10s">🎧 2010s Pop</option>
+        <option value="genre:20s">🎵 2020s Chart</option>
+      </optgroup>
+      <optgroup label="━━━ Genres ━━━">
+        <option value="genre:rock">🎸 Rock</option>
+        <option value="genre:pop">🎤 Pop</option>
+        <option value="genre:hip-hop">🎤 Hip Hop</option>
+        <option value="genre:electronic">🎹 Electronic</option>
+        <option value="genre:jazz">🎷 Jazz</option>
+        <option value="genre:classical">🎻 Classical</option>
+        <option value="genre:country">🤠 Country</option>
+        <option value="genre:r&b">🎶 R&B</option>
+        <option value="genre:metal">🤘 Metal</option>
+        <option value="genre:indie">🎸 Indie</option>
+      </optgroup>
+      <optgroup label="━━━ Themes ━━━">
+        <option value="genre:soundtrack">🎬 Movie Soundtracks</option>
+        <option value="genre:disney">🏰 Disney</option>
+        <option value="genre:workout">💪 Workout</option>
+        <option value="genre:chill">😌 Chill/Relax</option>
+        <option value="genre:party">🎉 Party</option>
+        <option value="genre:sad">😢 Sad Songs</option>
+      </optgroup>
+      <optgroup label="━━━ Regional ━━━">
+        <option value="genre:israeli">🇮🇱 Israeli Music</option>
+        <option value="genre:latin">💃 Latin</option>
+        <option value="genre:k-pop">🇰🇷 K-Pop</option>
+        <option value="genre:french">🇫🇷 French</option>
+        <option value="genre:arabic">🌙 Arabic</option>
+      </optgroup>
+    `;
+    
     if (data.playlists && data.playlists.length > 0) {
-      // Remove loading option
-      playlistSelector.innerHTML = '<option value="random">🎲 Random from Spotify</option>';
+      // Add user's playlists in a separate group
+      const userGroup = document.createElement('optgroup');
+      userGroup.label = '━━━ My Playlists ━━━';
       
-      // Add user's playlists
       data.playlists.forEach(playlist => {
         const option = document.createElement('option');
         option.value = playlist.id;
         option.textContent = `${playlist.name} (${playlist.tracks_total} songs)`;
-        playlistSelector.appendChild(option);
+        userGroup.appendChild(option);
       });
       
-      console.log('Loaded', data.playlists.length, 'playlists');
-    } else {
-      playlistSelector.innerHTML = '<option value="random">🎲 Random from Spotify</option>';
-      console.log('No playlists found');
+      playlistSelector.appendChild(userGroup);
+      console.log('Loaded', data.playlists.length, 'user playlists');
     }
+    
+    console.log('Playlists loaded successfully');
   } catch (error) {
     console.error('Error loading playlists:', error);
     const playlistSelector = document.getElementById('playlist-selector');

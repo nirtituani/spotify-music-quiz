@@ -441,8 +441,69 @@ app.get('/api/random-track', async (c) => {
   try {
     let track;
     
-    if (playlistId && playlistId !== 'random') {
-      // Get random track from specific playlist
+    if (playlistId && playlistId.startsWith('genre:')) {
+      // Genre-based search (curated playlists)
+      const genreKey = playlistId.replace('genre:', '');
+      
+      // Map genre keys to search queries
+      const genreQueries: { [key: string]: string } = {
+        // Decades
+        '60s': 'year:1960-1969',
+        '70s': 'year:1970-1979',
+        '80s': 'year:1980-1989',
+        '90s': 'year:1990-1999',
+        '00s': 'year:2000-2009',
+        '10s': 'year:2010-2019',
+        '20s': 'year:2020-2029',
+        // Genres
+        'rock': 'genre:rock',
+        'pop': 'genre:pop',
+        'hip-hop': 'genre:"hip hop"',
+        'electronic': 'genre:electronic',
+        'jazz': 'genre:jazz',
+        'classical': 'genre:classical',
+        'country': 'genre:country',
+        'r&b': 'genre:r&b',
+        'metal': 'genre:metal',
+        'indie': 'genre:indie',
+        // Themes
+        'soundtrack': 'genre:soundtrack',
+        'disney': 'disney',
+        'workout': 'workout',
+        'chill': 'chill',
+        'party': 'party',
+        'sad': 'sad',
+        // Regional
+        'israeli': 'israel OR hebrew',
+        'latin': 'genre:latin',
+        'k-pop': 'genre:k-pop',
+        'french': 'genre:french',
+        'arabic': 'genre:arabic'
+      };
+      
+      const searchQuery = genreQueries[genreKey] || genreKey;
+      const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // a-z
+      const offset = Math.floor(Math.random() * 100);
+      
+      const searchResponse = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}%20${randomChar}&type=track&limit=50&offset=${offset}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        }
+      )
+      
+      const data = await searchResponse.json() as any
+      
+      if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+        track = data.tracks.items[randomIndex]
+      } else {
+        return c.json({ error: 'No tracks found for this genre' }, 404)
+      }
+    } else if (playlistId && playlistId !== 'random') {
+      // Get random track from specific user playlist
       const playlistResponse = await fetch(
         `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`,
         {
@@ -461,7 +522,7 @@ app.get('/api/random-track', async (c) => {
         return c.json({ error: 'No tracks found in playlist' }, 404)
       }
     } else {
-      // Search for random tracks using random characters (default behavior)
+      // Search for random tracks using random characters (default "Random from Spotify")
       const randomSearch = String.fromCharCode(97 + Math.floor(Math.random() * 26)) // random a-z
       const offset = Math.floor(Math.random() * 100)
       
