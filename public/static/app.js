@@ -14,6 +14,15 @@ let gameState = {
   isMobile: false
 };
 
+// Define Spotify Web Playback SDK callback EARLY (before SDK loads)
+window.onSpotifyWebPlaybackSDKReady = () => {
+  console.log('Spotify SDK Ready - callback fired');
+  // The actual initialization will happen in initializeSpotifyPlayer()
+  if (window.spotifyPlayerInitializer) {
+    window.spotifyPlayerInitializer();
+  }
+};
+
 // Detect if mobile device
 function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -136,7 +145,9 @@ async function initializeSpotifyPlayer() {
     
     const token = tokenData.access_token;
     
-    window.onSpotifyWebPlaybackSDKReady = () => {
+    // Define the player initializer function
+    window.spotifyPlayerInitializer = () => {
+      console.log('Initializing Spotify Player with token');
       const player = new Spotify.Player({
         name: 'Spotify Music Quiz',
         getOAuthToken: cb => { cb(token); },
@@ -171,6 +182,12 @@ async function initializeSpotifyPlayer() {
 
       player.connect();
     };
+    
+    // If Spotify SDK already loaded, initialize immediately
+    if (window.Spotify) {
+      console.log('Spotify SDK already loaded, initializing now');
+      window.spotifyPlayerInitializer();
+    }
   } catch (error) {
     console.error('Failed to initialize player:', error);
   }
