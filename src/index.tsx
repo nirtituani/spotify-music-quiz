@@ -485,10 +485,39 @@ app.get('/api/random-track', async (c) => {
     }
     
     if (track) {
-      // Extract year from release_date (format: YYYY-MM-DD or YYYY)
+      // Fetch full track details to get accurate release date
       let releaseYear = 'Unknown';
-      if (track.album && track.album.release_date) {
-        releaseYear = track.album.release_date.split('-')[0]; // Get YYYY part
+      let albumName = 'Unknown Album';
+      
+      try {
+        const trackDetailsResponse = await fetch(
+          `https://api.spotify.com/v1/tracks/${track.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          }
+        )
+        
+        const trackDetails = await trackDetailsResponse.json() as any
+        
+        // Get the album release date (this is the song's original release year)
+        if (trackDetails.album && trackDetails.album.release_date) {
+          releaseYear = trackDetails.album.release_date.split('-')[0]; // Get YYYY part
+        }
+        
+        if (trackDetails.album && trackDetails.album.name) {
+          albumName = trackDetails.album.name;
+        }
+      } catch (error) {
+        console.error('Error fetching track details:', error);
+        // Fallback to basic info
+        if (track.album && track.album.release_date) {
+          releaseYear = track.album.release_date.split('-')[0];
+        }
+        if (track.album && track.album.name) {
+          albumName = track.album.name;
+        }
       }
       
       return c.json({
@@ -498,7 +527,7 @@ app.get('/api/random-track', async (c) => {
         uri: track.uri,
         preview_url: track.preview_url,
         release_year: releaseYear,
-        album: track.album ? track.album.name : 'Unknown Album'
+        album: albumName
       })
     } else {
       return c.json({ error: 'No track found' }, 404)
