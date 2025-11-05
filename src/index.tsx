@@ -55,6 +55,34 @@ app.get('/', (c) => {
           // Game Area
           <div class="bg-gray-900 bg-opacity-80 rounded-lg p-8 mb-8 border border-green-600">
             <div id="game-area">
+              {/* Duration Selector */}
+              <div class="mb-6">
+                <label class="block text-center text-gray-300 text-sm mb-3">Song Duration</label>
+                <div class="flex justify-center gap-3">
+                  <button 
+                    id="duration-30" 
+                    class="duration-btn bg-green-700 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 border-2 border-green-500"
+                    data-duration="30"
+                  >
+                    30 sec
+                  </button>
+                  <button 
+                    id="duration-60" 
+                    class="duration-btn bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 border-2 border-transparent"
+                    data-duration="60"
+                  >
+                    60 sec
+                  </button>
+                  <button 
+                    id="duration-full" 
+                    class="duration-btn bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 border-2 border-transparent"
+                    data-duration="0"
+                  >
+                    Full Song
+                  </button>
+                </div>
+              </div>
+
               <div class="text-center mb-6">
                 <div id="timer-display" class="text-4xl font-mono mb-4">30</div>
                 <div class="w-full bg-gray-700 rounded-full h-2 mb-6">
@@ -96,7 +124,11 @@ app.get('/', (c) => {
           <ul class="space-y-3 text-gray-300">
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>
-              <span>Listen to 30 seconds of a random song from Spotify</span>
+              <span>Choose your preferred song duration (30 sec, 60 sec, or Full Song)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-500 mr-2">•</span>
+              <span>Listen to a random song from Spotify</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">•</span>

@@ -7,6 +7,7 @@ let gameState = {
   currentTrack: null,
   timer: null,
   timeLeft: 30,
+  duration: 30,
   player: null,
   deviceId: null,
   isMobile: false
@@ -47,6 +48,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       window.location.href = '/logout';
     });
   }
+  
+  // Duration selector buttons
+  const durationBtns = document.querySelectorAll('.duration-btn');
+  durationBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      durationBtns.forEach(b => {
+        b.classList.remove('bg-green-700', 'border-green-500');
+        b.classList.add('bg-gray-700', 'border-transparent');
+      });
+      btn.classList.remove('bg-gray-700', 'border-transparent');
+      btn.classList.add('bg-green-700', 'border-green-500');
+      
+      // Update game state
+      gameState.duration = parseInt(btn.dataset.duration);
+      gameState.timeLeft = gameState.duration;
+      
+      // Update timer display
+      const timerDisplay = document.getElementById('timer-display');
+      if (timerDisplay) {
+        timerDisplay.textContent = gameState.duration === 0 ? '∞' : gameState.duration;
+      }
+      
+      console.log('Duration changed to:', gameState.duration === 0 ? 'Full Song' : `${gameState.duration} seconds`);
+    });
+  });
   
   // Initialize Spotify Web Playback SDK (Desktop only)
   if (window.Spotify) {
@@ -162,7 +189,7 @@ async function startRound() {
     
     gameState.currentTrack = track;
     gameState.isPlaying = true;
-    gameState.timeLeft = 30;
+    gameState.timeLeft = gameState.duration;
     
     // Update UI
     songInfo.innerHTML = '<p class="text-gray-400 animate-pulse">🎵 Song is playing...</p>';
@@ -232,10 +259,18 @@ function startTimer() {
   const timerDisplay = document.getElementById('timer-display');
   const timerBar = document.getElementById('timer-bar');
   
+  // Full song mode - no countdown
+  if (gameState.duration === 0) {
+    timerDisplay.textContent = '∞';
+    timerBar.style.width = '100%';
+    return; // No timer in full song mode
+  }
+  
+  // Normal countdown mode
   gameState.timer = setInterval(() => {
     gameState.timeLeft--;
     timerDisplay.textContent = gameState.timeLeft;
-    timerBar.style.width = `${(gameState.timeLeft / 30) * 100}%`;
+    timerBar.style.width = `${(gameState.timeLeft / gameState.duration) * 100}%`;
     
     if (gameState.timeLeft <= 0) {
       clearInterval(gameState.timer);
@@ -291,8 +326,9 @@ async function endRound(earnedPoint) {
   
   // Reset timer display
   setTimeout(() => {
-    gameState.timeLeft = 30;
-    document.getElementById('timer-display').textContent = '30';
+    gameState.timeLeft = gameState.duration;
+    const timerDisplay = document.getElementById('timer-display');
+    timerDisplay.textContent = gameState.duration === 0 ? '∞' : gameState.duration;
     document.getElementById('timer-bar').style.width = '100%';
   }, 100);
 }
