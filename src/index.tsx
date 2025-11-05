@@ -485,12 +485,20 @@ app.get('/api/random-track', async (c) => {
     }
     
     if (track) {
+      // Extract year from release_date (format: YYYY-MM-DD or YYYY)
+      let releaseYear = 'Unknown';
+      if (track.album && track.album.release_date) {
+        releaseYear = track.album.release_date.split('-')[0]; // Get YYYY part
+      }
+      
       return c.json({
         id: track.id,
         name: track.name,
         artists: track.artists.map((a: any) => a.name).join(', '),
         uri: track.uri,
-        preview_url: track.preview_url
+        preview_url: track.preview_url,
+        release_year: releaseYear,
+        album: track.album ? track.album.name : 'Unknown Album'
       })
     } else {
       return c.json({ error: 'No track found' }, 404)

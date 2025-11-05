@@ -421,6 +421,9 @@ async function endRound(earnedPoint) {
       <p class="text-xl mb-2">${earnedPoint ? '✅ Round Complete! +1 Point' : '⏭️ Skipped - No Points'}</p>
       <p class="text-2xl font-bold text-green-400">${track.name}</p>
       <p class="text-lg text-gray-300">by ${track.artists}</p>
+      <p class="text-sm text-gray-400 mt-1">
+        ${track.album || 'Unknown Album'} • ${track.release_year || 'Unknown Year'}
+      </p>
     </div>
   `;
   
