@@ -242,3 +242,14 @@ MIT License - Feel free to use and modify!
 **Last Updated**: 2025-11-05  
 **Status**: ✅ Active  
 **Version**: 1.1.0
+
+---
+
+## 📚 Additional Documentation
+
+- **[PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)** - Comprehensive technical documentation with architecture, code structure, and troubleshooting
+- **[DEVELOPMENT_HISTORY.md](DEVELOPMENT_HISTORY.md)** - Session-by-session change log with detailed explanations
+
+**For AI Assistants**: When starting a new conversation about this project, read both documentation files above for complete context.
+
+**Backup**: Download the latest working version at https://page.gensparksite.com/project_backups/spotify-music-quiz-working-v1.1.0.tar.gz
