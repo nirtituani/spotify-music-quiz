@@ -7,7 +7,7 @@ const BACKEND_URL = 'https://spotify-music-quiz.pages.dev';
 
 // Spotify OAuth Configuration
 const spotifyAuthConfig: AuthConfiguration = {
-  clientId: 'YOUR_SPOTIFY_CLIENT_ID', // Will be set in setup
+  clientId: '91aaf59fbaec4f1da13157f1fd9a874e', // Spotify Music Quiz iOS
   redirectUrl: 'spotifymusicquiz://callback',
   scopes: [
     'streaming',

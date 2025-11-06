@@ -392,7 +392,15 @@ app.post('/api/play', async (c) => {
 
 // API: Get user's playlists
 app.get('/api/playlists', async (c) => {
-  const accessToken = getCookie(c, 'spotify_access_token')
+  // Support both cookie (web) and Authorization header (mobile)
+  let accessToken = getCookie(c, 'spotify_access_token')
+  
+  if (!accessToken) {
+    const authHeader = c.req.header('Authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7)
+    }
+  }
   
   if (!accessToken) {
     return c.json({ error: 'Not authenticated' }, 401)
@@ -430,7 +438,15 @@ app.get('/api/playlists', async (c) => {
 
 // API: Get random track
 app.get('/api/random-track', async (c) => {
-  const accessToken = getCookie(c, 'spotify_access_token')
+  // Support both cookie (web) and Authorization header (mobile)
+  let accessToken = getCookie(c, 'spotify_access_token')
+  
+  if (!accessToken) {
+    const authHeader = c.req.header('Authorization')
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      accessToken = authHeader.substring(7)
+    }
+  }
   
   if (!accessToken) {
     return c.json({ error: 'Not authenticated' }, 401)
