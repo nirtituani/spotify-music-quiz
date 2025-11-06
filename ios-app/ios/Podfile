@@ -28,8 +28,8 @@ target 'SpotifyMusicQuiz' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  # Spotify Remote SDK
-  pod 'react-native-spotify-remote', :path => '../node_modules/react-native-spotify-remote'
+  # Spotify Remote SDK is auto-linked via use_native_modules!
+  # No need to manually add it here
 
   target 'SpotifyMusicQuizTests' do
     inherit! :complete
