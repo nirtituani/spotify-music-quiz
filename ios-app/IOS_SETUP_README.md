@@ -1,305 +1,310 @@
-# iOS App Setup Guide for Mac
+# Spotify Music Quiz - iOS App Setup Guide
 
-This guide will help you set up and run the Spotify Music Quiz iOS app on your Mac with Xcode.
+This guide will help you set up and run the iOS version of Spotify Music Quiz on your Mac with Xcode.
 
 ## Prerequisites
 
-Before you begin, make sure you have:
+Before starting, ensure you have the following installed on your Mac:
 
-1. **Mac computer** with macOS 12.0 or later
-2. **Xcode 14.0+** installed from the Mac App Store
-3. **Node.js 18+** installed (check with `node --version`)
-4. **CocoaPods** installed (check with `pod --version`)
-   ```bash
-   sudo gem install cocoapods
-   ```
+1. **macOS** (Big Sur 11.0 or later recommended)
+2. **Xcode** (14.0 or later)
+   - Install from Mac App Store
+   - After installation, open Xcode and accept the license agreement
+3. **Node.js** (18.x or later)
+   - Download from https://nodejs.org/
+   - Verify: `node --version`
+4. **CocoaPods** (1.11 or later)
+   - Install: `sudo gem install cocoapods`
+   - Verify: `pod --version`
 5. **Spotify Premium Account**
-6. **Spotify Developer Account** at https://developer.spotify.com/dashboard
+   - Required for playback functionality
 
 ## Step 1: Clone the Repository
 
 ```bash
-# Clone from GitHub
+# Clone the repository (use the same repo as web app)
 git clone https://github.com/YOUR_USERNAME/spotify-music-quiz.git
 cd spotify-music-quiz/ios-app
 ```
 
-## Step 2: Install Dependencies
+## Step 2: Spotify Developer Setup
+
+1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Log in with your Spotify account
+3. Click "Create App"
+4. Fill in the details:
+   - **App Name**: Spotify Music Quiz iOS
+   - **App Description**: Music quiz game for iOS
+   - **Redirect URI**: `spotifymusicquiz://callback`
+   - **Which API/SDKs are you planning to use?**: Select "iOS SDK"
+5. Click "Save"
+6. Copy your **Client ID** (you'll need this in Step 4)
+7. Go to "Settings" → "Redirect URIs"
+8. Add: `spotifymusicquiz://callback`
+9. Click "Save"
+
+**Important**: You'll need to use the same Spotify Client ID as your web app if you want shared authentication, OR create a separate iOS-specific app in the Spotify Dashboard.
+
+## Step 3: Install Dependencies
 
 ```bash
-# Install npm packages
+# Install Node.js dependencies
 npm install
 
-# Install iOS pods (this may take a few minutes)
+# Install iOS dependencies (CocoaPods)
 cd ios
 pod install
 cd ..
 ```
 
-**Important**: Always open the `.xcworkspace` file in Xcode, NOT the `.xcodeproj` file.
-
-## Step 3: Configure Spotify Developer Dashboard
-
-1. Go to https://developer.spotify.com/dashboard
-2. Click "Create app"
-3. Fill in the details:
-   - **App name**: Spotify Music Quiz
-   - **App description**: A music quiz game using Spotify
-   - **Redirect URI**: `spotifymusicquiz://callback`
-   - **APIs used**: Check "Web API"
-4. Save your app
-5. Copy your **Client ID** (you'll need this in the next step)
-6. Go to "App Settings" and add these **Redirect URIs**:
-   - `spotifymusicquiz://callback`
-   - `https://spotify-music-quiz.pages.dev/callback` (for web version)
+**Note**: If `pod install` fails, try:
+```bash
+cd ios
+pod repo update
+pod install --repo-update
+cd ..
+```
 
 ## Step 4: Configure Spotify Client ID
 
-Open `src/services/SpotifyAuthService.ts` and replace `YOUR_SPOTIFY_CLIENT_ID` with your actual Client ID:
+Edit `src/services/SpotifyAuthService.ts` and replace the placeholder:
 
 ```typescript
 const spotifyAuthConfig: AuthConfiguration = {
-  clientId: 'abc123xyz789', // Replace with your actual Client ID
+  clientId: 'YOUR_SPOTIFY_CLIENT_ID_HERE', // ← Replace this
   redirectUrl: 'spotifymusicquiz://callback',
-  // ...
+  // ... rest of config
 };
 ```
 
 ## Step 5: Configure iOS URL Scheme
 
-The URL scheme for deep linking should already be configured, but verify:
-
-1. Open `ios/SpotifyMusicQuiz.xcworkspace` in Xcode
+1. Open `ios/SpotifyMusicQuiz.xcworkspace` in Xcode (NOT .xcodeproj)
 2. Select your project in the navigator
-3. Go to the "Info" tab
-4. Under "URL Types", ensure you have:
-   - **Identifier**: `com.spotifymusicquiz.auth`
+3. Select the "SpotifyMusicQuiz" target
+4. Go to the "Info" tab
+5. Expand "URL Types"
+6. Click "+" to add a new URL Type
+7. Set:
+   - **Identifier**: `com.spotifymusicquiz`
    - **URL Schemes**: `spotifymusicquiz`
+8. Save (Cmd+S)
 
-## Step 6: Configure Spotify iOS SDK
+## Step 6: Configure Spotify SDK
 
-### A. Add Spotify SDK to Podfile
+The app uses `react-native-spotify-remote` which requires additional iOS configuration:
 
-The `react-native-spotify-remote` package should handle this automatically, but if you encounter issues, manually add to `ios/Podfile`:
+1. In Xcode, select your target → "Signing & Capabilities"
+2. Ensure you have a valid **Team** selected
+3. The **Bundle Identifier** should match your configuration
 
-```ruby
-target 'SpotifyMusicQuiz' do
-  # ... existing pods ...
-  
-  pod 'SpotifyiOS', '~> 1.2.2'
-end
-```
+**Spotify Remote SDK Setup**:
+1. The SDK will be installed via CocoaPods (already configured in Podfile)
+2. Make sure you've run `pod install` in Step 3
+3. The SDK requires iOS 13.0 or later (already set in Podfile)
 
-Then run:
-```bash
-cd ios && pod install && cd ..
-```
-
-### B. Register Your App with Spotify
-
-1. Go to your Spotify Developer Dashboard
-2. In your app settings, add your iOS Bundle Identifier:
-   - Default: `com.spotifymusicquiz` (or whatever you set in Xcode)
-3. Save changes
-
-## Step 7: Build and Run
-
-### Option A: Run on iOS Simulator
+## Step 7: Run on iOS Simulator
 
 ```bash
-# Make sure you're in the ios-app directory
+# Make sure you're in ios-app directory
 npm run ios
 
-# Or specify a simulator
+# Or specify a specific simulator
 npm run ios -- --simulator="iPhone 15 Pro"
 ```
 
-### Option B: Run on Physical Device
+**Alternative**: Open `ios/SpotifyMusicQuiz.xcworkspace` in Xcode and click the Play button.
 
-1. Connect your iPhone via USB
-2. Open `ios/SpotifyMusicQuiz.xcworkspace` in Xcode
-3. Select your device from the device dropdown
-4. Click the "Play" button (or press Cmd+R)
+## Step 8: Run on Physical iPhone Device
 
-**Note**: For physical devices, you'll need:
-- An Apple Developer account (free account works for testing)
-- Enable "Developer Mode" on your iPhone (Settings > Privacy & Security > Developer Mode)
-- Trust your computer on the iPhone
+1. Connect your iPhone to your Mac via USB
+2. Trust your Mac on the iPhone (if prompted)
+3. In Xcode:
+   - Select your iPhone from the device dropdown (top toolbar)
+   - Go to "Signing & Capabilities"
+   - Select your development team
+   - Xcode will automatically create a provisioning profile
+4. Click the Play button in Xcode, or run:
+   ```bash
+   npm run ios -- --device
+   ```
 
-## Step 8: Test the App
+**First Time Setup on Device**:
+- iOS will block the app from running
+- Go to Settings → General → VPN & Device Management
+- Trust your developer certificate
+- Return to the app and launch again
 
-1. **Launch the app** on simulator or device
-2. **Tap "Login with Spotify"** - This should open Safari/Chrome
-3. **Authorize the app** in the browser
-4. **Redirect back** to the app automatically
-5. **Select a playlist** and duration
-6. **Start Round** - Music should play via Spotify app
+## Step 9: Test the App
+
+1. **Login Flow**:
+   - Tap "Login with Spotify"
+   - You'll be redirected to Spotify in Safari
+   - Authorize the app
+   - You'll be redirected back to the app
+
+2. **Game Flow**:
+   - Select a playlist (curated or your own)
+   - Choose duration (30s, 60s, or Full Song)
+   - Tap "Start Round"
+   - Music plays without showing track info
+   - Timer counts down
+   - Tap "Skip" or wait for timer to end
+   - Song details are revealed
 
 ## Troubleshooting
 
-### "No Spotify app installed" Error
-
-The Spotify SDK requires the Spotify app to be installed:
-- On simulator: Not supported (Spotify app isn't available for simulator)
-- On device: Install the Spotify app from the App Store
-
-**Solution**: You'll need to test on a real iPhone with Spotify installed.
-
-### Authentication Redirect Not Working
-
-1. Verify the redirect URI in Spotify Developer Dashboard matches exactly: `spotifymusicquiz://callback`
-2. Check URL scheme in Xcode matches: `spotifymusicquiz`
-3. Make sure you're using the correct Client ID in `SpotifyAuthService.ts`
-
-### CocoaPods Installation Fails
-
+### Issue: "No bundle URL present"
+**Solution**: Make sure Metro bundler is running:
 ```bash
-# Update CocoaPods repo
-pod repo update
-
-# Clean and reinstall
-cd ios
-rm -rf Pods Podfile.lock
-pod install
-cd ..
+npm start
 ```
 
-### Metro Bundler Issues
-
-```bash
-# Clear Metro cache
-npm start -- --reset-cache
-
-# Or manually clear
-rm -rf node_modules
-rm package-lock.json
-npm install
-```
-
-### "Command PhaseScriptExecution failed" in Xcode
-
-This usually happens with Flipper or other debug tools:
+### Issue: "Pod install failed"
+**Solution**: 
 ```bash
 cd ios
 pod deintegrate
+pod repo update
 pod install
 cd ..
 ```
 
-## Architecture Overview
+### Issue: "Command PhaseScriptExecution failed"
+**Solution**: 
+1. Clean build folder: Xcode → Product → Clean Build Folder (Cmd+Shift+K)
+2. Restart Metro bundler: `npm start -- --reset-cache`
 
-### Services
+### Issue: "Spotify SDK not connecting"
+**Solution**:
+1. Ensure Spotify app is installed on your device
+2. Log in to Spotify on your device
+3. Verify your Spotify account is Premium
+4. Check that redirect URI matches in Spotify Dashboard and code
 
-1. **SpotifyAuthService** (`src/services/SpotifyAuthService.ts`)
-   - Handles OAuth login flow
-   - Token storage and retrieval
-   - Token expiry checking
+### Issue: "Code signing error"
+**Solution**:
+1. In Xcode, select your target
+2. Go to "Signing & Capabilities"
+3. Ensure "Automatically manage signing" is checked
+4. Select a valid Team
 
-2. **SpotifyAPIService** (`src/services/SpotifyAPIService.ts`)
-   - Fetches playlists from backend
-   - Gets random tracks
-   - Communicates with https://spotify-music-quiz.pages.dev backend
-
-3. **SpotifyPlayerService** (`src/services/SpotifyPlayerService.ts`)
-   - Controls music playback via Spotify SDK
-   - Play, pause, stop functions
-   - **Important**: Requires Spotify app installed
-
-### Screens
-
-1. **LoginScreen** (`src/screens/LoginScreen.tsx`)
-   - Initial authentication screen
-   - Spotify login button
-   - Navigates to GameScreen after successful login
-
-2. **GameScreen** (`src/screens/GameScreen.tsx`)
-   - Main game interface
-   - Playlist selection (curated + user playlists)
-   - Duration selector (30s, 60s, Full Song)
-   - Timer and scoring
-   - Song reveal after timer/skip
-
-## Key Features
-
-- **32 Curated Playlists**: Decades (50s-2020s), genres (Rock, Pop, Hip Hop), themes (Love Songs, Workout), regional (Israeli, Latin)
-- **User Playlists**: Access your own Spotify playlists
-- **Duration Lock**: Settings lock after first round
-- **Timer System**: Countdown with progress bar
-- **Scoring**: Track points across rounds
-- **Song Reveal**: Show track info after timer ends
-
-## Backend API Endpoints
-
-The app communicates with the Cloudflare Pages backend:
-
-- **Base URL**: `https://spotify-music-quiz.pages.dev`
-- **POST** `/api/auth/token` - Exchange authorization code for access token
-- **GET** `/api/playlists` - Get user's playlists (requires Bearer token)
-- **GET** `/api/random-track?playlist_id=X` - Get random track (requires Bearer token)
-- **GET** `/api/mobile/random-track` - Mobile-specific endpoint
-
-## Native iOS Configuration Files
-
-### Info.plist Changes Needed
-
-Add this to `ios/SpotifyMusicQuiz/Info.plist`:
-
-```xml
-<key>CFBundleURLTypes</key>
-<array>
-  <dict>
-    <key>CFBundleTypeRole</key>
-    <string>Editor</string>
-    <key>CFBundleURLName</key>
-    <string>com.spotifymusicquiz.auth</string>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <string>spotifymusicquiz</string>
-    </array>
-  </dict>
-</array>
-
-<key>LSApplicationQueriesSchemes</key>
-<array>
-  <string>spotify</string>
-</array>
+### Issue: "react-native-spotify-remote not found"
+**Solution**:
+```bash
+cd ios
+pod install
+cd ..
+npm start -- --reset-cache
 ```
 
-### Build Settings
+## Backend Configuration
 
-In Xcode, make sure:
-- **Deployment Target**: iOS 13.0 or later
-- **Swift Language Version**: Swift 5.0
-- **Enable Bitcode**: No
+The app connects to your deployed Cloudflare backend:
+- **Production URL**: `https://spotify-music-quiz.pages.dev`
+- **Endpoints Used**:
+  - `POST /api/auth/token` - OAuth token exchange
+  - `GET /api/playlists` - Fetch user playlists
+  - `GET /api/random-track` - Get random track
+  - `GET /api/mobile/random-track` - Mobile-specific endpoint
 
-## Known Limitations
+**No backend changes needed** - the backend already supports mobile clients with Authorization header.
 
-1. **Simulator Support**: Spotify SDK requires physical device (won't work on simulator)
-2. **Spotify Premium Required**: The Spotify SDK only works with Premium accounts
-3. **Spotify App Required**: User must have Spotify app installed on device
+## Project Structure
+
+```
+ios-app/
+├── src/
+│   ├── components/         # Reusable UI components (future)
+│   ├── screens/
+│   │   ├── LoginScreen.tsx # Login with Spotify
+│   │   └── GameScreen.tsx  # Main game screen
+│   ├── services/
+│   │   ├── SpotifyAuthService.ts   # OAuth authentication
+│   │   ├── SpotifyAPIService.ts    # Backend API calls
+│   │   └── SpotifyPlayerService.ts # Spotify SDK player
+│   ├── types/
+│   │   └── index.ts        # TypeScript interfaces
+│   └── utils/              # Helper functions (future)
+├── ios/                    # Native iOS code
+│   ├── Podfile             # CocoaPods dependencies
+│   └── SpotifyMusicQuiz.xcworkspace
+├── App.tsx                 # Root component with navigation
+├── index.js                # Entry point
+├── package.json            # Dependencies
+└── tsconfig.json           # TypeScript config
+```
+
+## Development Workflow
+
+1. **Start Metro Bundler**:
+   ```bash
+   npm start
+   ```
+
+2. **Run on Simulator** (in another terminal):
+   ```bash
+   npm run ios
+   ```
+
+3. **Make Code Changes**:
+   - Edit files in `src/`
+   - Save files
+   - App will automatically reload (Fast Refresh)
+
+4. **Debug**:
+   - Press `Cmd+D` in simulator to open developer menu
+   - Enable "Debug JS Remotely" to use Chrome DevTools
+   - Use `console.log()` to debug
 
 ## Next Steps
 
-After successful setup:
+After basic setup is working:
 
-1. **Test all features**: Login, playlist selection, playback, timer
-2. **UI Polish**: Refine styles, add animations, improve UX
-3. **Error Handling**: Add better error messages and loading states
-4. **Testing**: Test on multiple iOS versions and devices
-5. **App Store**: Prepare for App Store submission if desired
+1. **Implement Full Spotify SDK Integration**:
+   - Complete `SpotifyPlayerService.ts` with react-native-spotify-remote
+   - Handle connection state properly
+   - Implement error handling
+
+2. **Add More Features**:
+   - Leaderboard (requires backend updates)
+   - Different game modes
+   - Custom playlist creation
+   - Social sharing
+
+3. **UI/UX Improvements**:
+   - Animations and transitions
+   - Better loading states
+   - Error messages
+   - Haptic feedback
+
+4. **Testing**:
+   - Test on different iPhone models
+   - Test with different Spotify accounts
+   - Test edge cases (no internet, Spotify not installed, etc.)
+
+5. **App Store Submission** (when ready):
+   - Add app icons (all required sizes)
+   - Add launch screen
+   - Add privacy policy
+   - Create screenshots
+   - Submit for review
 
 ## Support
 
-If you encounter issues:
+- **Backend Issues**: Check https://spotify-music-quiz.pages.dev/
+- **Spotify API**: https://developer.spotify.com/documentation/
+- **React Native**: https://reactnative.dev/docs/getting-started
+- **Spotify SDK**: https://github.com/cjam/react-native-spotify-remote
 
-1. Check the troubleshooting section above
-2. Review backend logs at https://spotify-music-quiz.pages.dev
-3. Check Spotify Developer Dashboard for API issues
-4. Verify all redirect URIs are configured correctly
+## Notes
 
-## Resources
+- This is a development build - performance may be slower than production
+- Spotify Premium is required for playback functionality
+- The app requires internet connection to function
+- Backend is already deployed and working - no additional setup needed
+- All game logic follows the same rules as the web version
 
-- [React Native Documentation](https://reactnative.dev/docs/getting-started)
-- [Spotify iOS SDK](https://developer.spotify.com/documentation/ios)
-- [react-native-spotify-remote](https://github.com/cjam/react-native-spotify-remote)
-- [Spotify Web API](https://developer.spotify.com/documentation/web-api)
+## License
+
+Same as the main Spotify Music Quiz project.
