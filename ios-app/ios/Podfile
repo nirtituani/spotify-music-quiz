@@ -27,6 +27,9 @@ target 'SpotifyMusicQuiz' do
 
   # Spotify Remote SDK is auto-linked via use_native_modules!
   # No need to manually add it here
+  
+  # Explicitly add AppAuth to fix linking issue
+  pod 'AppAuth', '~> 1.7'
 
   target 'SpotifyMusicQuizTests' do
     inherit! :complete
