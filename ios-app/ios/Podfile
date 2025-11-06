@@ -41,11 +41,19 @@ target 'SpotifyMusicQuiz' do
       :mac_catalyst_enabled => false
     )
     
-    # Fix for RNEventEmitter not found error
+    # Fix for RNEventEmitter not found error and Spotify SDK simulator architecture
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        
+        # Exclude arm64 for simulator builds (fixes Spotify SDK issue)
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
       end
+    end
+    
+    # Also set for main project
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
   end
 end
