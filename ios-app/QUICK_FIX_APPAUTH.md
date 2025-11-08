@@ -2,11 +2,13 @@
 
 **Problem:** `ld: library not found for -lAppAuth`
 
+**Status:** Solutions 1 and 2 tried, still debugging...
+
 ---
 
 ## 🎯 Try These Solutions (In Order)
 
-### **Solution 1: Force Static Library Build** ⭐ (Try This First)
+### **Solution 1: Force Static Library Build** ❌ (Tried - Didn't Work)
 
 Edit `ios/Podfile`, add to `post_install`:
 
@@ -43,7 +45,7 @@ pod install
 
 ---
 
-### **Solution 2: Use Frameworks**
+### **Solution 2: Use Frameworks** ❌ (Tried - Didn't Work)
 
 Add to top of Podfile (after `platform :ios`):
 
@@ -59,9 +61,34 @@ rm -rf Pods Podfile.lock
 pod install
 ```
 
+**Update:** Also tried removing conflicting MACH_O_TYPE settings. Still didn't resolve the issue.
+
 ---
 
-### **Solution 3: Manual Build in Xcode**
+### **Solution 3: Remove Conflicting Settings** ⭐ (Try This Next)
+
+Current Podfile has `use_frameworks!` enabled. Let's clean up the conflicting settings:
+
+**Already done in latest commit (d0da6e1):**
+- Removed `MACH_O_TYPE = 'staticlib'` for AppAuth
+- Kept `use_frameworks! :linkage => :static`
+- Let CocoaPods handle framework building
+
+**Now try:**
+```bash
+cd /Users/nirtituani/spotify-music-quiz/ios-app
+git pull origin main  # Get latest Podfile
+cd ios
+rm -rf Pods Podfile.lock
+rm -rf ~/Library/Developer/Xcode/DerivedData/*  # Clean derived data
+pod install
+```
+
+Then open Xcode and build.
+
+---
+
+### **Solution 4: Manual Build in Xcode**
 
 1. Open `ios/SpotifyMusicQuiz.xcworkspace`
 2. Top left scheme selector → Select **"AppAuth"** (click and search)
@@ -72,7 +99,7 @@ pod install
 
 ---
 
-### **Solution 4: Check What's Actually There**
+### **Solution 5: Check What's Actually There**
 
 ```bash
 cd /Users/nirtituani/spotify-music-quiz/ios-app/ios
@@ -88,7 +115,7 @@ If `libAppAuth.a` doesn't exist, AppAuth isn't building.
 
 ---
 
-### **Solution 5: Remove react-native-app-auth** (Last Resort)
+### **Solution 6: Remove react-native-app-auth** (Last Resort)
 
 If nothing works, replace with simple OAuth:
 
