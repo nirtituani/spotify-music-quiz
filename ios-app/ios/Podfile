@@ -7,7 +7,6 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '13.4'
 install! 'cocoapods', :deterministic_uuids => false
-use_frameworks! :linkage => :static
 
 target 'SpotifyMusicQuiz' do
   config = use_native_modules!

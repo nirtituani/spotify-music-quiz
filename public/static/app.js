@@ -33,15 +33,9 @@ function isMobileDevice() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
-  // Detect mobile
+  // Detect mobile (for UI adjustments if needed)
   gameState.isMobile = isMobileDevice();
   console.log('Mobile device detected:', gameState.isMobile);
-  
-  // Show mobile warning if on mobile
-  if (gameState.isMobile) {
-    showMobileWarning();
-    return; // Don't initialize game on mobile
-  }
   
   const startBtn = document.getElementById('start-btn');
   const skipBtn = document.getElementById('skip-btn');
@@ -212,28 +206,7 @@ function lockDurationButtons() {
   console.log('Duration locked at:', gameState.duration === 0 ? 'Full Song' : `${gameState.duration} seconds`);
 }
 
-// Show mobile warning
-function showMobileWarning() {
-  const gameArea = document.getElementById('game-area');
-  if (gameArea) {
-    gameArea.innerHTML = `
-      <div class="text-center">
-        <div class="text-6xl mb-4">📱</div>
-        <h3 class="text-2xl font-bold mb-4 text-yellow-400">Desktop Required</h3>
-        <p class="text-gray-300 mb-4">
-          This quiz requires a <strong>desktop or laptop computer</strong> with Spotify Premium.
-        </p>
-        <p class="text-gray-400 text-sm mb-4">
-          Mobile browsers don't support Spotify playback without revealing the song name, 
-          which would ruin the quiz experience.
-        </p>
-        <p class="text-green-400 font-semibold">
-          Please open this page on a desktop or laptop to play! 🖥️
-        </p>
-      </div>
-    `;
-  }
-}
+
 
 // Initialize Spotify Player (Desktop only)
 async function initializeSpotifyPlayer() {
