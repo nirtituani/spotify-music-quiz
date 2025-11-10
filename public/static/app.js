@@ -13,8 +13,23 @@ let gameState = {
   playlistLocked: false, // Lock playlist after first round starts
   player: null,
   deviceId: null,
-  isMobile: false
+  isMobile: false,
+  useNativePlayer: false, // Use React Native Spotify player if available
+  nativePlayerReady: false
 };
+
+// Check if running in React Native WebView
+function isNativeApp() {
+  return typeof window.isNativeApp !== 'undefined' && window.isNativeApp === true;
+}
+
+// Listen for native Spotify player ready event
+window.addEventListener('spotifyNativeReady', () => {
+  console.log('Native Spotify player is ready');
+  gameState.nativePlayerReady = true;
+  gameState.useNativePlayer = true;
+  gameState.deviceId = 'native'; // Set a dummy device ID for native player
+});
 
 // Define Spotify Web Playback SDK callback EARLY (before SDK loads)
 window.onSpotifyWebPlaybackSDKReady = () => {
@@ -36,6 +51,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Detect mobile (for UI adjustments if needed)
   gameState.isMobile = isMobileDevice();
   console.log('Mobile device detected:', gameState.isMobile);
+  
+  // Check if running in native app
+  if (isNativeApp()) {
+    console.log('Running in React Native app - will use native Spotify player');
+    gameState.useNativePlayer = true;
+    // Check if native player is already ready
+    if (window.spotifyNativeConnected) {
+      gameState.nativePlayerReady = true;
+      gameState.deviceId = 'native';
+    }
+  }
   
   const startBtn = document.getElementById('start-btn');
   const skipBtn = document.getElementById('skip-btn');
@@ -334,9 +360,22 @@ async function startRound() {
   }
 }
 
-// Play track using Spotify Web Playback SDK
+// Play track using Spotify Web Playback SDK or Native Player
 async function playTrack(uri) {
-  if (!gameState.deviceId) {
+  // Use native player if available (React Native app)
+  if (gameState.useNativePlayer && isNativeApp()) {
+    console.log('Using native Spotify player');
+    try {
+      window.sendToNative('PLAY_TRACK', { trackUri: uri });
+      return;
+    } catch (error) {
+      console.error('Native playback failed, falling back to web player:', error);
+      gameState.useNativePlayer = false;
+    }
+  }
+  
+  // Fall back to web playback SDK
+  if (!gameState.deviceId || gameState.deviceId === 'native') {
     showMessage('Spotify player not ready. Please refresh the page.', 'error');
     return;
   }
@@ -373,6 +412,17 @@ async function playTrack(uri) {
 
 // Stop playback
 async function stopPlayback() {
+  // Use native player if available
+  if (gameState.useNativePlayer && isNativeApp()) {
+    try {
+      window.sendToNative('PAUSE_TRACK', {});
+      return;
+    } catch (error) {
+      console.error('Native pause failed:', error);
+    }
+  }
+  
+  // Fall back to web player
   if (gameState.player) {
     gameState.player.pause();
   }
