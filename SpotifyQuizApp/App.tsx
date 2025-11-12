@@ -6,7 +6,7 @@ import {
   remote as SpotifyRemote,
   ApiConfig,
   ApiScope,
-} from 'react-native-spotify-remote';
+} from '@vanlesson/react-native-spotify-remote';
 
 // Spotify App Configuration
 const SPOTIFY_CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID'; // TODO: Replace with your Spotify Client ID
