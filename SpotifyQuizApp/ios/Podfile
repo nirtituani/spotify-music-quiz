@@ -28,6 +28,9 @@ end
 target 'SpotifyQuizApp' do
   config = use_native_modules!
 
+  # Spotify Remote SDK - must be added manually
+  pod 'RNSpotifyRemote', :path => '../node_modules/react-native-spotify-remote'
+
   use_react_native!(
     :path => config[:reactNativePath],
     # Enables Flipper.
