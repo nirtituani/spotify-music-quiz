@@ -15,7 +15,8 @@ let gameState = {
   deviceId: null,
   isMobile: false,
   useNativePlayer: false, // Use React Native Spotify player if available
-  nativePlayerReady: false
+  nativePlayerReady: false,
+  audioPlayer: null // HTML5 Audio player for preview URLs
 };
 
 // Check if running in React Native WebView
@@ -346,8 +347,8 @@ async function startRound() {
     startBtn.classList.add('hidden');
     skipBtn.classList.remove('hidden');
     
-    // Play track using Web Playback SDK
-    await playTrack(track.uri);
+    // Play track using preview URL (mobile) or Web Playback SDK (desktop)
+    await playTrack(track.uri, track.preview_url);
     
     // Start timer
     startTimer();
@@ -360,8 +361,23 @@ async function startRound() {
   }
 }
 
-// Play track using Spotify Web Playback SDK or Native Player
-async function playTrack(uri) {
+// Play track using preview URL (works on all devices) or Spotify SDK
+async function playTrack(uri, previewUrl) {
+  // Try using preview URL first if available (works on mobile!)
+  if (previewUrl && gameState.isMobile) {
+    console.log('Using preview URL for mobile playback');
+    try {
+      if (!gameState.audioPlayer) {
+        gameState.audioPlayer = new Audio();
+      }
+      gameState.audioPlayer.src = previewUrl;
+      gameState.audioPlayer.play();
+      return;
+    } catch (error) {
+      console.error('Preview playback failed:', error);
+    }
+  }
+  
   // Use native player if available (React Native app)
   if (gameState.useNativePlayer && isNativeApp()) {
     console.log('Using native Spotify player');
@@ -374,7 +390,7 @@ async function playTrack(uri) {
     }
   }
   
-  // Fall back to web playback SDK
+  // Fall back to web playback SDK (desktop)
   if (!gameState.deviceId || gameState.deviceId === 'native') {
     showMessage('Spotify player not ready. Please refresh the page.', 'error');
     return;
@@ -412,6 +428,12 @@ async function playTrack(uri) {
 
 // Stop playback
 async function stopPlayback() {
+  // Stop HTML5 audio player if using preview
+  if (gameState.audioPlayer) {
+    gameState.audioPlayer.pause();
+    gameState.audioPlayer.currentTime = 0;
+  }
+  
   // Use native player if available
   if (gameState.useNativePlayer && isNativeApp()) {
     try {
