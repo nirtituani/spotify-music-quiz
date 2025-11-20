@@ -27,9 +27,9 @@ app.get('/api/test-preview-stats', async (c) => {
   }
   
   try {
-    const stats = { total: 0, withPreview: 0, percentage: 0 }
+    const stats = { total: 0, withPreview: 0, percentage: 0, sampleTracks: [] as any[] }
     
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 3; i++) {
       const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26))
       const offset = Math.floor(Math.random() * 100)
       
@@ -43,6 +43,17 @@ app.get('/api/test-preview-stats', async (c) => {
       if (data.tracks?.items) {
         stats.total += data.tracks.items.length
         stats.withPreview += data.tracks.items.filter((t: any) => t.preview_url).length
+        
+        // Add first 3 tracks as samples to see what we're getting
+        if (i === 0) {
+          stats.sampleTracks = data.tracks.items.slice(0, 3).map((t: any) => ({
+            name: t.name,
+            artists: t.artists.map((a: any) => a.name).join(', '),
+            preview_url: t.preview_url,
+            available_markets: t.available_markets?.length || 0,
+            is_playable: t.is_playable
+          }))
+        }
       }
     }
     
