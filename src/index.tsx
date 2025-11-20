@@ -526,8 +526,17 @@ app.get('/api/random-track', async (c) => {
       const data = await searchResponse.json() as any
       
       if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
-        track = data.tracks.items[randomIndex]
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = data.tracks.items.filter((t: any) => t.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex]
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+          track = data.tracks.items[randomIndex]
+        }
       } else {
         return c.json({ error: 'No tracks found for this genre' }, 404)
       }
@@ -545,8 +554,17 @@ app.get('/api/random-track', async (c) => {
       const playlistData = await playlistResponse.json() as any
       
       if (playlistData.items && playlistData.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * playlistData.items.length)
-        track = playlistData.items[randomIndex].track
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = playlistData.items.filter((item: any) => item.track && item.track.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex].track
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * playlistData.items.length)
+          track = playlistData.items[randomIndex].track
+        }
       } else {
         return c.json({ error: 'No tracks found in playlist' }, 404)
       }
@@ -567,8 +585,17 @@ app.get('/api/random-track', async (c) => {
       const data = await searchResponse.json() as any
       
       if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
-        track = data.tracks.items[randomIndex]
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = data.tracks.items.filter((t: any) => t.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex]
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+          track = data.tracks.items[randomIndex]
+        }
       } else {
         return c.json({ error: 'No tracks found' }, 404)
       }
