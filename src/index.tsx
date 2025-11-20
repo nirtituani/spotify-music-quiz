@@ -34,7 +34,7 @@ app.get('/api/test-preview-stats', async (c) => {
       const offset = Math.floor(Math.random() * 100)
       
       const response = await fetch(
-        `https://api.spotify.com/v1/search?q=${randomChar}%25&type=track&limit=50&offset=${offset}`,
+        `https://api.spotify.com/v1/search?q=${randomChar}%25&type=track&limit=50&offset=${offset}&market=US`,
         { headers: { 'Authorization': `Bearer ${accessToken}` } }
       )
       
