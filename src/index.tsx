@@ -550,12 +550,12 @@ app.get('/api/random-track', async (c) => {
           'Shalom Hanoch', 'Yasmin Levy', 'Eden Ben Zaken', 'Noa Kirel'
         ];
         const randomArtist = israeliArtists[Math.floor(Math.random() * israeliArtists.length)];
-        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomArtist)}&type=track&limit=50`;
+        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomArtist)}&type=track&limit=50&market=from_token`;
       } else {
         const searchQuery = genreQueries[genreKey] || genreKey;
         const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // a-z
         const offset = Math.floor(Math.random() * 100);
-        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}%20${randomChar}&type=track&limit=50&offset=${offset}`;
+        searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}%20${randomChar}&type=track&limit=50&offset=${offset}&market=from_token`;
       }
       
       const searchResponse = await fetch(searchUrl, {
@@ -584,7 +584,7 @@ app.get('/api/random-track', async (c) => {
     } else if (playlistId && playlistId !== 'random') {
       // Get random track from specific user playlist
       const playlistResponse = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`,
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&market=from_token`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -615,7 +615,7 @@ app.get('/api/random-track', async (c) => {
       const offset = Math.floor(Math.random() * 100)
       
       const searchResponse = await fetch(
-        `https://api.spotify.com/v1/search?q=${randomSearch}%25&type=track&limit=50&offset=${offset}`,
+        `https://api.spotify.com/v1/search?q=${randomSearch}%25&type=track&limit=50&offset=${offset}&market=from_token`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
