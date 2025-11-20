@@ -12,6 +12,13 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 app.use(renderer)
 
+// Test Preview URL availability page
+app.get('/test-preview', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview URL Test</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:1200px;margin:0 auto;padding:20px;background:linear-gradient(to bottom right,#1a472a,#000,#1a472a);color:#fff;min-height:100vh}h1{text-align:center;color:#1db954}.button{background:#1db954;color:#fff;border:none;padding:15px 30px;font-size:16px;border-radius:25px;cursor:pointer;display:block;margin:20px auto;font-weight:700}.button:hover{background:#1ed760}.button:disabled{background:#666;cursor:not-allowed}.summary{background:rgba(29,185,84,.2);padding:20px;border-radius:10px;margin-bottom:20px;border:2px solid #1db954}.summary h2{margin-top:0;color:#1db954}.search-result{background:rgba(255,255,255,.05);padding:15px;margin:10px 0;border-radius:8px;border-left:4px solid #1db954}.good{color:#1db954;font-weight:700}.warning{color:#ff9800;font-weight:700}.bad{color:#f44336;font-weight:700}.percentage{font-size:3em;font-weight:700;text-align:center;margin:20px 0}.loading{text-align:center;padding:20px}.spinner{border:4px solid rgba(255,255,255,.1);border-top:4px solid #1db954;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:20px auto}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}</style></head><body><h1>🎵 Spotify Preview URL Test</h1><p style="text-align:center;color:#aaa">Test 10 random searches to see what % of tracks have preview URLs</p><div id="loginSection"><p style="text-align:center">Login required</p><button class="button" onclick="location.href='/login'">Login with Spotify</button></div><div id="testSection" style="display:none"><button id="testButton" class="button" onclick="runTest()">Run Test</button><div id="status"></div><div id="results"></div></div><script>async function checkAuth(){try{const r=await fetch('/api/user/playlists');if(r.ok){document.getElementById('loginSection').style.display='none';document.getElementById('testSection').style.display='block'}}catch(e){}}async function runTest(){const btn=document.getElementById('testButton'),st=document.getElementById('status'),res=document.getElementById('results');btn.disabled=true;st.innerHTML='<div class="loading"><div class="spinner"></div><p>Testing...</p></div>';res.innerHTML='';try{const d={totalSearches:10,searchResults:[],summary:{totalTracks:0,tracksWithPreview:0,tracksWithoutPreview:0,percentageWithPreview:0}};for(let i=0;i<10;i++){st.innerHTML=\`<div class="loading"><div class="spinner"></div><p>Search \${i+1}/10</p></div>\`;const c=String.fromCharCode(97+Math.floor(Math.random()*26)),o=Math.floor(Math.random()*100),r=await fetch(\`https://api.spotify.com/v1/search?q=\${c}%25&type=track&limit=50&offset=\${o}\`,{headers:{'Authorization':'Bearer '+await getToken()}});const data=await r.json();if(data.tracks?.items?.length>0){const t=data.tracks.items,w=t.filter(x=>x.preview_url),wo=t.filter(x=>!x.preview_url);d.searchResults.push({searchQuery:\`\${c}%\`,offset:o,totalTracks:t.length,withPreview:w.length,withoutPreview:wo.length,percentageWithPreview:Math.round(w.length/t.length*100),sampleWithPreview:w.slice(0,3).map(x=>({name:x.name,artists:x.artists.map(a=>a.name).join(', ')})),sampleWithoutPreview:wo.slice(0,3).map(x=>({name:x.name,artists:x.artists.map(a=>a.name).join(', ')}))});d.summary.totalTracks+=t.length;d.summary.tracksWithPreview+=w.length;d.summary.tracksWithoutPreview+=wo.length}}d.summary.percentageWithPreview=Math.round(d.summary.tracksWithPreview/d.summary.totalTracks*100);showResults(d)}catch(e){st.innerHTML=\`<div class="bad">Error: \${e.message}</div>\`}finally{btn.disabled=false}}function showResults(d){const st=document.getElementById('status'),res=document.getElementById('results'),p=d.summary.percentageWithPreview;let cls='good',emoji='✅',msg='Excellent!';if(p<30){cls='bad';emoji='❌';msg='Too few preview URLs'}else if(p<50){cls='warning';emoji='⚠️';msg='May have issues'}else if(p<70){cls='warning';emoji='⚠️';msg='Most tracks OK'}st.innerHTML='';res.innerHTML=\`<div class="summary"><h2>\${emoji} Results</h2><div class="percentage \${cls}">\${p}%</div><p style="text-align:center;font-size:1.2em">\${msg}</p><hr style="border-color:rgba(255,255,255,.2);margin:20px 0"><p><strong>Total:</strong> \${d.summary.totalTracks}</p><p><strong>With Preview:</strong> <span class="good">\${d.summary.tracksWithPreview}</span></p><p><strong>Without:</strong> <span class="bad">\${d.summary.tracksWithoutPreview}</span></p></div><h3>Details</h3>\${d.searchResults.map((r,i)=>\`<div class="search-result"><h4>Search \${i+1}: "\${r.searchQuery}" (offset:\${r.offset})</h4><p>Total:\${r.totalTracks} | With:<span class="good">\${r.withPreview}</span>(\${r.percentageWithPreview}%) | Without:<span class="bad">\${r.withoutPreview}</span></p></div>\`).join('')}\`}async function getToken(){const c=document.cookie.split(';');for(let x of c){const[n,v]=x.trim().split('=');if(n==='spotify_access_token')return decodeURIComponent(v)}throw new Error('Not auth')}checkAuth()</script></body></html>`)
+})
+
+
 // Home page
 app.get('/', (c) => {
   const accessToken = getCookie(c, 'spotify_access_token')
@@ -526,8 +533,17 @@ app.get('/api/random-track', async (c) => {
       const data = await searchResponse.json() as any
       
       if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
-        track = data.tracks.items[randomIndex]
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = data.tracks.items.filter((t: any) => t.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex]
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+          track = data.tracks.items[randomIndex]
+        }
       } else {
         return c.json({ error: 'No tracks found for this genre' }, 404)
       }
@@ -545,8 +561,17 @@ app.get('/api/random-track', async (c) => {
       const playlistData = await playlistResponse.json() as any
       
       if (playlistData.items && playlistData.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * playlistData.items.length)
-        track = playlistData.items[randomIndex].track
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = playlistData.items.filter((item: any) => item.track && item.track.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex].track
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * playlistData.items.length)
+          track = playlistData.items[randomIndex].track
+        }
       } else {
         return c.json({ error: 'No tracks found in playlist' }, 404)
       }
@@ -567,8 +592,17 @@ app.get('/api/random-track', async (c) => {
       const data = await searchResponse.json() as any
       
       if (data.tracks && data.tracks.items && data.tracks.items.length > 0) {
-        const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
-        track = data.tracks.items[randomIndex]
+        // Filter to only tracks WITH preview URLs (needed for mobile playback)
+        const tracksWithPreview = data.tracks.items.filter((t: any) => t.preview_url)
+        
+        if (tracksWithPreview.length > 0) {
+          const randomIndex = Math.floor(Math.random() * tracksWithPreview.length)
+          track = tracksWithPreview[randomIndex]
+        } else {
+          // Fallback: use any track if none have previews
+          const randomIndex = Math.floor(Math.random() * data.tracks.items.length)
+          track = data.tracks.items[randomIndex]
+        }
       } else {
         return c.json({ error: 'No tracks found' }, 404)
       }

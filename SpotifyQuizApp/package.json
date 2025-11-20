@@ -11,9 +11,9 @@
     "postinstall": "node scripts/fix-boost.js"
   },
   "dependencies": {
+    "@vanlesson/react-native-spotify-remote": "^1.0.11",
     "react": "18.2.0",
     "react-native": "0.73.0",
-    "react-native-spotify-remote": "^0.4.0",
     "react-native-webview": "^13.16.0"
   },
   "devDependencies": {

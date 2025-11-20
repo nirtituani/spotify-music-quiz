@@ -6,7 +6,7 @@ import {
   remote as SpotifyRemote,
   ApiConfig,
   ApiScope,
-} from 'react-native-spotify-remote';
+} from '@vanlesson/react-native-spotify-remote';
 
 // Spotify App Configuration
 const SPOTIFY_CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID'; // TODO: Replace with your Spotify Client ID
@@ -40,6 +40,17 @@ function App(): React.JSX.Element {
   const initializeSpotify = async () => {
     try {
       console.log('Initializing Spotify...');
+      
+      // Check if SpotifyAuth is available
+      if (!SpotifyAuth || !SpotifyAuth.authorize) {
+        console.warn('Spotify SDK not available - using WebView only mode');
+        Alert.alert(
+          'WebView Only Mode',
+          'Native Spotify SDK is not available. The app will work but audio playback might not work properly.',
+          [{text: 'OK'}]
+        );
+        return;
+      }
       
       // Check if Spotify app is installed
       const isInstalled = await SpotifyRemote.isSpotifyAppInstalled();
