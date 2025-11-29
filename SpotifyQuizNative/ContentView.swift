@@ -143,7 +143,14 @@ struct ContentView: View {
             }
             .navigationBarHidden(true)
             .onAppear {
+                print("ContentView appeared, isConnected: \(spotifyManager.isConnected)")
                 if spotifyManager.isConnected {
+                    loadUserPlaylists()
+                }
+            }
+            .onChange(of: spotifyManager.isConnected) { isConnected in
+                print("Connection status changed to: \(isConnected)")
+                if isConnected {
                     loadUserPlaylists()
                 }
             }
