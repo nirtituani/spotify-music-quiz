@@ -1,0 +1,14 @@
+import Foundation
+
+/// Configuration file for Spotify credentials
+/// INSTRUCTIONS:
+/// 1. Copy this file to SpotifyConfig.swift (same directory)
+/// 2. Replace YOUR_SPOTIFY_CLIENT_ID with your actual Client ID from https://developer.spotify.com/dashboard
+/// 3. SpotifyConfig.swift is gitignored so your credentials won't be committed
+struct SpotifyConfig {
+    // Replace with your actual Spotify Client ID
+    static let clientID = "YOUR_SPOTIFY_CLIENT_ID"
+    
+    // Redirect URI for OAuth callback (no need to change)
+    static let redirectURI = "spotifyquiz://callback"
+}

@@ -9,8 +9,8 @@ class SpotifyManager: NSObject, ObservableObject {
     @Published var isPlaying = false
     
     // MARK: - Private Properties
-    private let clientID = "YOUR_SPOTIFY_CLIENT_ID" // TODO: Replace with your Client ID
-    private let redirectURI = URL(string: "spotifyquiz://callback")!
+    private let clientID = SpotifyConfig.clientID
+    private let redirectURI = URL(string: SpotifyConfig.redirectURI)!
     private var connectionToken: String?
     
     private lazy var configuration: SPTConfiguration = {
