@@ -55,7 +55,7 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Authorize with Spotify (OAuth)
     func authorize() {
-        let requestedScopes = "app-remote-control,user-read-private,playlist-read-private"
+        let requestedScopes = ["app-remote-control", "user-read-private", "playlist-read-private"]
         
         appRemote.authorizeAndPlayURI("", asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
             if success {
