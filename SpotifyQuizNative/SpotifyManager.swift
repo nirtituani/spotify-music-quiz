@@ -10,9 +10,8 @@ class SpotifyManager: NSObject, ObservableObject {
     
     // MARK: - Private Properties
     private let clientID = "YOUR_SPOTIFY_CLIENT_ID" // TODO: Replace with your Client ID
-    private let redirectURI = URL(string: "spotifyquiznative://callback")!
+    private let redirectURI = URL(string: "spotifyquiz://callback")!
     
-    private var accessToken: String?
     private lazy var configuration: SPTConfiguration = {
         let config = SPTConfiguration(clientID: clientID, redirectURL: redirectURI)
         config.playURI = ""
@@ -36,11 +35,6 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Connect to Spotify
     func connect() {
-        guard let _ = accessToken else {
-            print("No access token available. Please authorize first.")
-            return
-        }
-        
         if !appRemote.isConnected {
             appRemote.connect()
         }
@@ -110,12 +104,6 @@ class SpotifyManager: NSObject, ObservableObject {
             }
         })
         isPlaying = true
-    }
-    
-    /// Set access token (from OAuth callback)
-    func setAccessToken(_ token: String) {
-        self.accessToken = token
-        connect()
     }
     
     /// Get current playback state
