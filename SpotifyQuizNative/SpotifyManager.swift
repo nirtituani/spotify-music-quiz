@@ -1,5 +1,6 @@
 import Foundation
 import SpotifyiOS
+import Combine
 
 class SpotifyManager: NSObject, ObservableObject {
     // MARK: - Published Properties
@@ -54,8 +55,7 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Authorize with Spotify (OAuth)
     func authorize() {
-        let scope: SPTScope = [.appRemoteControl, .userReadPrivate, .playlistReadPrivate]
-        let requestedScopes: SPTScope = scope
+        let requestedScopes = "app-remote-control,user-read-private,playlist-read-private"
         
         appRemote.authorizeAndPlayURI("", asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
             if success {
