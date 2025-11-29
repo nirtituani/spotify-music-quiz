@@ -3,7 +3,16 @@ import Combine
 
 struct GameView: View {
     @EnvironmentObject var spotifyManager: SpotifyManager
-    @StateObject private var viewModel = GameViewModel()
+    @StateObject private var viewModel: GameViewModel
+    
+    let playlistId: String?
+    let duration: Int
+    
+    init(playlistId: String? = nil, duration: Int = 30) {
+        self.playlistId = playlistId
+        self.duration = duration
+        self._viewModel = StateObject(wrappedValue: GameViewModel(playlistId: playlistId, duration: duration))
+    }
     
     var body: some View {
         VStack(spacing: 20) {
@@ -42,7 +51,7 @@ struct GameView: View {
                         .foregroundColor(.green)
                     
                     Circle()
-                        .trim(from: 0.0, to: CGFloat(viewModel.timeRemaining) / 30.0)
+                        .trim(from: 0.0, to: CGFloat(viewModel.timeRemaining) / CGFloat(viewModel.duration))
                         .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
                         .foregroundColor(.green)
                         .rotationEffect(Angle(degrees: 270.0))
@@ -155,7 +164,7 @@ struct GameView: View {
 class GameViewModel: ObservableObject {
     @Published var round = 1
     @Published var score = 0
-    @Published var timeRemaining = 30
+    @Published var timeRemaining: Int
     @Published var gameState: GameState = .ready
     @Published var currentTrack: Track?
     @Published var showAnswer = false
@@ -164,6 +173,14 @@ class GameViewModel: ObservableObject {
     
     var spotifyManager: SpotifyManager?
     private var timer: Timer?
+    private let playlistId: String?
+    let duration: Int
+    
+    init(playlistId: String? = nil, duration: Int = 30) {
+        self.playlistId = playlistId
+        self.duration = duration
+        self.timeRemaining = duration
+    }
     
     enum GameState {
         case ready, playing, finished
@@ -172,10 +189,10 @@ class GameViewModel: ObservableObject {
     func startRound() {
         gameState = .playing
         showAnswer = false
-        timeRemaining = 30
+        timeRemaining = duration
         
-        // Fetch random track from backend
-        APIManager.shared.getRandomTrack { [weak self] result in
+        // Fetch random track from backend with optional playlist
+        APIManager.shared.getRandomTrack(playlistId: playlistId) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let track):
