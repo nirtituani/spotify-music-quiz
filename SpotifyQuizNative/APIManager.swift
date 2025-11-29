@@ -60,7 +60,7 @@ class APIManager {
     
     /// Get user playlists
     func getUserPlaylists(completion: @escaping (Result<[Playlist], Error>) -> Void) {
-        guard let url = URL(string: "\(baseURL)/api/user/playlists") else {
+        guard let url = URL(string: "\(baseURL)/api/playlists") else {
             completion(.failure(APIError.invalidURL))
             return
         }
@@ -84,10 +84,13 @@ class APIManager {
             }
             
             do {
-                let playlists = try JSONDecoder().decode([Playlist].self, from: data)
-                completion(.success(playlists))
+                let response = try JSONDecoder().decode(PlaylistsResponse.self, from: data)
+                completion(.success(response.playlists))
             } catch {
                 print("Decoding error: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("Response data: \(jsonString)")
+                }
                 completion(.failure(error))
             }
         }.resume()
@@ -154,6 +157,10 @@ struct Playlist: Codable {
         case id, name
         case imageUrl = "image_url"
     }
+}
+
+struct PlaylistsResponse: Codable {
+    let playlists: [Playlist]
 }
 
 struct TokenResponse: Codable {

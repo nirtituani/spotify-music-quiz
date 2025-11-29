@@ -158,13 +158,16 @@ struct ContentView: View {
     }
     
     private func loadUserPlaylists() {
+        print("Loading user playlists...")
         APIManager.shared.getUserPlaylists { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let playlists):
+                    print("Successfully loaded \(playlists.count) playlists")
                     self.userPlaylists = playlists
                 case .failure(let error):
                     print("Failed to load playlists: \(error.localizedDescription)")
+                    print("Error details: \(error)")
                 }
             }
         }
