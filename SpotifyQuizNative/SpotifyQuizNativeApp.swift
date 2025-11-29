@@ -33,6 +33,8 @@ struct SpotifyQuizNativeApp: App {
             print("Access token received: \(accessToken.prefix(10))...")
             // Store token for backend API calls
             APIManager.shared.setAccessToken(accessToken)
+            // Set token for Spotify App Remote connection
+            spotifyManager.setConnectionToken(accessToken)
         }
     }
 }

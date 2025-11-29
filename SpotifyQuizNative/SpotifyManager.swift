@@ -11,10 +11,13 @@ class SpotifyManager: NSObject, ObservableObject {
     // MARK: - Private Properties
     private let clientID = "YOUR_SPOTIFY_CLIENT_ID" // TODO: Replace with your Client ID
     private let redirectURI = URL(string: "spotifyquiz://callback")!
+    private var connectionToken: String?
     
     private lazy var configuration: SPTConfiguration = {
         let config = SPTConfiguration(clientID: clientID, redirectURL: redirectURI)
         config.playURI = ""
+        config.tokenSwapURL = URL(string: "")
+        config.tokenRefreshURL = URL(string: "")
         return config
     }()
     
@@ -38,6 +41,14 @@ class SpotifyManager: NSObject, ObservableObject {
         if !appRemote.isConnected {
             appRemote.connect()
         }
+    }
+    
+    /// Set the connection token from OAuth callback
+    func setConnectionToken(_ token: String) {
+        self.connectionToken = token
+        appRemote.connectionParameters.accessToken = token
+        print("Connection token set: \(token.prefix(10))...")
+        connect()
     }
     
     /// Disconnect from Spotify
