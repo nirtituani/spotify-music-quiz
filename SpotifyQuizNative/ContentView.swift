@@ -164,7 +164,7 @@ struct ContentView: View {
                             }
                             
                             // Start Game Button
-                            NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration)) {
+                            NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration, playlistName: getPlaylistName())) {
                                 HStack {
                                     Image(systemName: "play.circle.fill")
                                     Text("Start Game")

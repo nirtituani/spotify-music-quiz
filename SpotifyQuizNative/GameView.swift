@@ -7,10 +7,12 @@ struct GameView: View {
     
     let playlistId: String?
     let duration: Int
+    let playlistName: String
     
-    init(playlistId: String? = nil, duration: Int = 30) {
+    init(playlistId: String? = nil, duration: Int = 30, playlistName: String = "Random from Spotify") {
         self.playlistId = playlistId
         self.duration = duration
+        self.playlistName = playlistName
         self._viewModel = StateObject(wrappedValue: GameViewModel(playlistId: playlistId, duration: duration))
     }
     
@@ -41,6 +43,16 @@ struct GameView: View {
                 .cornerRadius(10)
             }
             .padding(.top)
+            
+            // Playlist Name
+            HStack {
+                Image(systemName: "music.note.list")
+                    .foregroundColor(.green)
+                Text(playlistName)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
             
             // Timer (only show if not Full Song mode)
             if viewModel.gameState == .playing && viewModel.duration > 0 {
