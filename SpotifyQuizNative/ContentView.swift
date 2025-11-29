@@ -164,7 +164,7 @@ struct ContentView: View {
                             }
                             
                             // Start Game Button
-                            NavigationLink(destination: GameView(playlistId: selectedPlaylist == "random" ? nil : selectedPlaylist, duration: selectedDuration)) {
+                            NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration)) {
                                 HStack {
                                     Image(systemName: "play.circle.fill")
                                     Text("Start Game")
@@ -214,6 +214,18 @@ struct ContentView: View {
         }
         // Then check user playlists
         return userPlaylists.first(where: { $0.id == selectedPlaylist })?.name ?? "Random from Spotify"
+    }
+    
+    private func getPlaylistIdForBackend() -> String? {
+        if selectedPlaylist == "random" {
+            return nil
+        }
+        // Check if it's a curated playlist - add genre: prefix
+        if curatedPlaylists.contains(where: { $0.id == selectedPlaylist }) {
+            return "genre:\(selectedPlaylist)"
+        }
+        // User playlist - return as is
+        return selectedPlaylist
     }
     
     private func loadUserPlaylists() {

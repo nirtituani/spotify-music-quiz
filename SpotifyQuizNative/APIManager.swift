@@ -134,15 +134,19 @@ class APIManager {
 // MARK: - Models
 
 struct Track: Codable {
-    let id: String
     let name: String
     let artists: String
     let uri: String
     let releaseYear: String?
     let album: String?
     
+    // Computed property to extract ID from URI
+    var id: String {
+        return uri.components(separatedBy: ":").last ?? ""
+    }
+    
     enum CodingKeys: String, CodingKey {
-        case id, name, artists, uri
+        case name, artists, uri
         case releaseYear = "release_year"
         case album
     }
