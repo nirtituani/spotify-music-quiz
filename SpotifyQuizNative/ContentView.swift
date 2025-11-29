@@ -8,6 +8,40 @@ struct ContentView: View {
     
     let durations = [30, 60]
     
+    // Curated playlists matching web version
+    let curatedPlaylists: [(id: String, name: String, category: String)] = [
+        // Decades
+        ("60s", "🎸 60s Hits", "Decades"),
+        ("70s", "🕺 70s Classics", "Decades"),
+        ("80s", "🎹 80s Pop", "Decades"),
+        ("90s", "💿 90s Favorites", "Decades"),
+        ("2000s", "📱 2000s Hits", "Decades"),
+        ("2010s", "🎧 2010s Pop", "Decades"),
+        ("2020s", "🎵 2020s Chart", "Decades"),
+        // Genres
+        ("rock", "🎸 Rock", "Genres"),
+        ("pop", "🎤 Pop", "Genres"),
+        ("hiphop", "🎤 Hip Hop", "Genres"),
+        ("electronic", "🎹 Electronic", "Genres"),
+        ("jazz", "🎺 Jazz", "Genres"),
+        ("classical", "🎻 Classical", "Genres"),
+        ("country", "🤠 Country", "Genres"),
+        ("rnb", "🎵 R&B", "Genres"),
+        ("metal", "🤘 Metal", "Genres"),
+        ("indie", "🎸 Indie", "Genres"),
+        // Themes
+        ("movie", "🎬 Movie Soundtracks", "Themes"),
+        ("disney", "🏰 Disney", "Themes"),
+        ("workout", "💪 Workout", "Themes"),
+        ("chill", "😌 Chill/Relax", "Themes"),
+        ("party", "🎉 Party", "Themes"),
+        ("sad", "😢 Sad Songs", "Themes"),
+        // Regional
+        ("israeli", "🇮🇱 Israeli Music", "Regional"),
+        ("latin", "💃 Latin", "Regional"),
+        ("kpop", "🇰🇷 K-Pop", "Regional"),
+    ]
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -70,11 +104,24 @@ struct ContentView: View {
                                         Label("Random from Spotify", systemImage: "shuffle")
                                     }
                                     
+                                    // Group curated playlists by category
+                                    ForEach(["Decades", "Genres", "Themes", "Regional"], id: \.self) { category in
+                                        Section(header: Text(category)) {
+                                            ForEach(curatedPlaylists.filter { $0.category == category }, id: \.id) { playlist in
+                                                Button(action: { selectedPlaylist = playlist.id }) {
+                                                    Text(playlist.name)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
                                     if !userPlaylists.isEmpty {
                                         Divider()
-                                        ForEach(userPlaylists, id: \.id) { playlist in
-                                            Button(action: { selectedPlaylist = playlist.id }) {
-                                                Text(playlist.name)
+                                        Section(header: Text("Your Playlists")) {
+                                            ForEach(userPlaylists, id: \.id) { playlist in
+                                                Button(action: { selectedPlaylist = playlist.id }) {
+                                                    Text(playlist.name)
+                                                }
                                             }
                                         }
                                     }
@@ -161,6 +208,11 @@ struct ContentView: View {
         if selectedPlaylist == "random" {
             return "Random from Spotify"
         }
+        // Check curated playlists first
+        if let curated = curatedPlaylists.first(where: { $0.id == selectedPlaylist }) {
+            return curated.name
+        }
+        // Then check user playlists
         return userPlaylists.first(where: { $0.id == selectedPlaylist })?.name ?? "Random from Spotify"
     }
     
