@@ -49,7 +49,20 @@ class SpotifyManager: NSObject, ObservableObject {
         self.connectionToken = token
         appRemote.connectionParameters.accessToken = token
         print("Connection token set: \(token.prefix(10))...")
-        connect()
+        
+        // Connect and immediately pause to prevent auto-play
+        if !appRemote.isConnected {
+            appRemote.connect()
+            
+            // Pause after a very short delay (as soon as connected)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.appRemote.playerAPI?.pause({ result, error in
+                    if error == nil {
+                        print("Paused auto-play on connection")
+                    }
+                })
+            }
+        }
     }
     
     /// Disconnect from Spotify
@@ -61,21 +74,18 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Authorize with Spotify (OAuth)
     func authorize() {
-        // Build authorization URL manually to avoid auto-play
-        let scopes = "app-remote-control user-read-private playlist-read-private"
-        let scopesEncoded = scopes.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let redirectEncoded = redirectURI.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        // Use SDK authorization but we'll pause immediately after connection
+        let requestedScopes = ["app-remote-control", "user-read-private", "playlist-read-private"]
         
-        let authURLString = "https://accounts.spotify.com/authorize?client_id=\(clientID)&response_type=token&redirect_uri=\(redirectEncoded)&scope=\(scopesEncoded)&show_dialog=false"
+        // Set a flag to prevent auto-play
+        appRemote.connectionParameters.accessToken = nil
         
-        if let authURL = URL(string: authURLString) {
-            print("Opening Spotify authorization...")
-            UIApplication.shared.open(authURL, options: [:]) { success in
-                if success {
-                    print("Authorization URL opened successfully")
-                } else {
-                    print("Failed to open authorization URL")
-                }
+        appRemote.authorizeAndPlayURI("", asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
+            if success {
+                print("Authorization successful")
+                // Don't connect here - wait for token to be set via callback
+            } else {
+                print("Authorization failed")
             }
         }
     }
@@ -147,14 +157,22 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("App Remote connected")
         isConnected = true
         
-        // Pause any currently playing music
+        // IMMEDIATELY pause any playback - do this first before anything else
         appRemote.playerAPI?.pause({ result, error in
             if let error = error {
-                print("Note: Could not pause existing playback: \(error.localizedDescription)")
+                print("Note: Could not pause playback: \(error.localizedDescription)")
             } else {
-                print("Paused any existing playback")
+                print("✓ Paused playback on connection")
             }
         })
+        
+        // Also try to get player state and pause if playing
+        appRemote.playerAPI?.getPlayerState { [weak self] result, error in
+            if let playerState = result as? SPTAppRemotePlayerState, !playerState.isPaused {
+                appRemote.playerAPI?.pause(nil)
+                print("✓ Force paused active playback")
+            }
+        }
         
         // Subscribe to player state
         appRemote.playerAPI?.delegate = self
