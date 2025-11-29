@@ -42,8 +42,8 @@ struct GameView: View {
             }
             .padding(.top)
             
-            // Timer
-            if viewModel.gameState == .playing {
+            // Timer (only show if not Full Song mode)
+            if viewModel.gameState == .playing && viewModel.duration > 0 {
                 ZStack {
                     Circle()
                         .stroke(lineWidth: 10)
@@ -61,6 +61,20 @@ struct GameView: View {
                         .font(.system(size: 60, weight: .bold))
                 }
                 .frame(width: 150, height: 150)
+                .padding()
+            } else if viewModel.gameState == .playing && viewModel.duration == 0 {
+                // Full Song mode - show playing indicator
+                VStack(spacing: 15) {
+                    Image(systemName: "music.note")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    Text("Playing Full Song")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Text("Press 'I Know It!' when ready")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
                 .padding()
             }
             
@@ -198,7 +212,10 @@ class GameViewModel: ObservableObject {
                 case .success(let track):
                     self?.currentTrack = track
                     self?.playTrack(uri: track.uri)
-                    self?.startTimer()
+                    // Only start timer if not Full Song mode (duration > 0)
+                    if let duration = self?.duration, duration > 0 {
+                        self?.startTimer()
+                    }
                 case .failure(let error):
                     self?.showError(message: "Failed to fetch track: \(error.localizedDescription)")
                 }
@@ -220,13 +237,18 @@ class GameViewModel: ObservableObject {
         gameState = .finished
         showAnswer = true
         
-        // Award points based on time remaining
-        if timeRemaining > 20 {
-            score += 3
-        } else if timeRemaining > 10 {
-            score += 2
+        // Award points based on time remaining (only for timed modes)
+        if duration > 0 {
+            if timeRemaining > 20 {
+                score += 3
+            } else if timeRemaining > 10 {
+                score += 2
+            } else {
+                score += 1
+            }
         } else {
-            score += 1
+            // Full Song mode - fixed points
+            score += 2
         }
     }
     

@@ -6,7 +6,7 @@ struct ContentView: View {
     @State private var selectedDuration = 30
     @State private var userPlaylists: [Playlist] = []
     
-    let durations = [30, 60]
+    let durations = [30, 60, 0] // 0 = Full Song
     
     // Curated playlists matching web version
     let curatedPlaylists: [(id: String, name: String, category: String)] = [
@@ -150,7 +150,7 @@ struct ContentView: View {
                                         Button(action: {
                                             selectedDuration = duration
                                         }) {
-                                            Text("\(duration) sec")
+                                            Text(duration == 0 ? "Full Song" : "\(duration) sec")
                                                 .font(.subheadline)
                                                 .fontWeight(selectedDuration == duration ? .bold : .regular)
                                                 .foregroundColor(selectedDuration == duration ? .white : .primary)
