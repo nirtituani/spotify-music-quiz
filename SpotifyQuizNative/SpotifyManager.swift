@@ -149,6 +149,15 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("App Remote connected")
         isConnected = true
         
+        // Pause any currently playing music
+        appRemote.playerAPI?.pause({ result, error in
+            if let error = error {
+                print("Note: Could not pause existing playback: \(error.localizedDescription)")
+            } else {
+                print("Paused any existing playback")
+            }
+        })
+        
         // Subscribe to player state
         appRemote.playerAPI?.delegate = self
         appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
@@ -156,6 +165,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
                 print("Error subscribing to player state: \(error.localizedDescription)")
             }
         })
+        
+        // Update UI state
+        isPlaying = false
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
