@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import SpotifyiOS
 import Combine
 
@@ -60,24 +61,21 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Authorize with Spotify (OAuth)
     func authorize() {
-        let requestedScopes = ["app-remote-control", "user-read-private", "playlist-read-private"]
+        // Build authorization URL manually to avoid auto-play
+        let scopes = "app-remote-control user-read-private playlist-read-private"
+        let scopesEncoded = scopes.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let redirectEncoded = redirectURI.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         
-        appRemote.authorizeAndPlayURI("", asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
-            if success {
-                print("Authorization successful")
-                // Try to connect after a short delay to let Spotify app settle
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self?.connect()
-                    // Retry connection if it fails
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        if !(self?.appRemote.isConnected ?? false) {
-                            print("Retrying connection...")
-                            self?.connect()
-                        }
-                    }
+        let authURLString = "https://accounts.spotify.com/authorize?client_id=\(clientID)&response_type=token&redirect_uri=\(redirectEncoded)&scope=\(scopesEncoded)&show_dialog=false"
+        
+        if let authURL = URL(string: authURLString) {
+            print("Opening Spotify authorization...")
+            UIApplication.shared.open(authURL, options: [:]) { success in
+                if success {
+                    print("Authorization URL opened successfully")
+                } else {
+                    print("Failed to open authorization URL")
                 }
-            } else {
-                print("Authorization failed")
             }
         }
     }
