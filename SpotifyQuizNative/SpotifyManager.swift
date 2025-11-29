@@ -54,7 +54,17 @@ class SpotifyManager: NSObject, ObservableObject {
         appRemote.authorizeAndPlayURI("", asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
             if success {
                 print("Authorization successful")
-                self?.connect()
+                // Try to connect after a short delay to let Spotify app settle
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self?.connect()
+                    // Retry connection if it fails
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        if !(self?.appRemote.isConnected ?? false) {
+                            print("Retrying connection...")
+                            self?.connect()
+                        }
+                    }
+                }
             } else {
                 print("Authorization failed")
             }
