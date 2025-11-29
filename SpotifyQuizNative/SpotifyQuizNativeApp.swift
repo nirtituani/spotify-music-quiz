@@ -16,7 +16,12 @@ struct SpotifyQuizNativeApp: App {
     }
     
     private func handleURL(_ url: URL) {
-        // Handle Spotify OAuth callback
+        // Spotify SDK handles the OAuth callback internally
+        // We just need to trigger the connection
+        print("Received callback URL: \(url)")
+        
+        // The SDK will automatically connect after authorization
+        // Extract access token if needed for backend API calls
         let parameters = url.fragment?.components(separatedBy: "&").reduce(into: [String: String]()) { result, param in
             let parts = param.components(separatedBy: "=")
             if parts.count == 2 {
@@ -25,7 +30,8 @@ struct SpotifyQuizNativeApp: App {
         }
         
         if let accessToken = parameters?["access_token"] {
-            spotifyManager.setAccessToken(accessToken)
+            print("Access token received: \(accessToken.prefix(10))...")
+            // Store token for backend API calls
             APIManager.shared.setAccessToken(accessToken)
         }
     }
