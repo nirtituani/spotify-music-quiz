@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var spotifyManager: SpotifyManager
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+    @State private var showWelcome = true
+    @State private var showConnectionScreen = false
     @State private var selectedPlaylist = "random"
     @State private var selectedDuration = 30
     @State private var userPlaylists: [Playlist] = []
@@ -43,8 +46,9 @@ struct ContentView: View {
     ]
     
     var body: some View {
-        NavigationView {
-            ScrollView {
+        ZStack {
+            NavigationView {
+                ScrollView {
                 VStack(spacing: 30) {
                     // Header
                     VStack(spacing: 10) {
@@ -187,19 +191,53 @@ struct ContentView: View {
                         .padding(.bottom)
                 }
                 .padding(.horizontal)
-            }
-            .navigationBarHidden(true)
-            .onAppear {
-                print("ContentView appeared, isConnected: \(spotifyManager.isConnected)")
-                if spotifyManager.isConnected {
-                    loadUserPlaylists()
+                }
+                .navigationBarHidden(true)
+                .onAppear {
+                    print("ContentView appeared, isConnected: \(spotifyManager.isConnected)")
+                    
+                    // Check if first time user
+                    if !hasSeenWelcome {
+                        showWelcome = true
+                    } else if !spotifyManager.isConnected {
+                        // If returning user but not connected, show connection screen
+                        showConnectionScreen = true
+                    }
+                    
+                    if spotifyManager.isConnected {
+                        loadUserPlaylists()
+                    }
+                }
+                .onChange(of: spotifyManager.isConnected) { isConnected in
+                    print("Connection status changed to: \(isConnected)")
+                    if isConnected {
+                        loadUserPlaylists()
+                    }
                 }
             }
-            .onChange(of: spotifyManager.isConnected) { isConnected in
-                print("Connection status changed to: \(isConnected)")
-                if isConnected {
-                    loadUserPlaylists()
-                }
+            
+            // Onboarding screens
+            if showWelcome && !hasSeenWelcome {
+                WelcomeView(showWelcome: $showWelcome)
+                    .transition(.opacity)
+                    .zIndex(2)
+                    .onChange(of: showWelcome) { oldValue, newValue in
+                        if !newValue {
+                            hasSeenWelcome = true
+                            // Show connection screen after welcome
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                if !spotifyManager.isConnected {
+                                    showConnectionScreen = true
+                                }
+                            }
+                        }
+                    }
+            }
+            
+            if showConnectionScreen && !spotifyManager.isConnected {
+                SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
+                    .transition(.opacity)
+                    .zIndex(1)
             }
         }
     }
