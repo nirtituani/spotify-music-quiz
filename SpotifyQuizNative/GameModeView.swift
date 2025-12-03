@@ -15,41 +15,33 @@ struct GameModeView: View {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
                     // Beatster logo at top
-                    HStack(spacing: 8) {
-                        // Left waveform bars
+                    HStack(spacing: 10) {
+                        // Left waveform bars - 6 bars with varying heights
                         HStack(spacing: 2) {
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 14)
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 20)
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 14)
+                            ForEach([10, 18, 14, 22, 16, 12], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1.5)
+                                    .fill(Color.pink)
+                                    .frame(width: 3, height: CGFloat(height))
+                            }
                         }
                         
                         // Beatster text - "Beat" in white, "ster" in pink
                         HStack(spacing: 0) {
                             Text("Beat")
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(.white)
                             Text("ster")
-                                .font(.system(size: 28, weight: .bold))
+                                .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(.pink)
                         }
                         
-                        // Right waveform bars
+                        // Right waveform bars - 6 bars with varying heights
                         HStack(spacing: 2) {
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 14)
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 20)
-                            RoundedRectangle(cornerRadius: 1.5)
-                                .fill(Color.pink)
-                                .frame(width: 3, height: 14)
+                            ForEach([12, 16, 22, 14, 18, 10], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1.5)
+                                    .fill(Color.pink)
+                                    .frame(width: 3, height: CGFloat(height))
+                            }
                         }
                     }
                     .padding(.top, 60)
