@@ -7,14 +7,14 @@ struct GameModeView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color(red: 0.08, green: 0.12, blue: 0.16)
+            // Dark background - #0F0F12
+            Color(red: 0.059, green: 0.059, blue: 0.071)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Top section with logo and game modes
-                VStack(spacing: 40) {
-                    // Beatster logo at top - white and pink
+                // HEADER - Logo + Stats
+                HStack {
+                    // Beatster logo at top left - white and pink
                     HStack(spacing: 6) {
                         // Left waveform bars - 5 bars in pink
                         HStack(spacing: 2) {
@@ -46,7 +46,36 @@ struct GameModeView: View {
                             }
                         }
                     }
-                    .padding(.top, 60)
+                    
+                    Spacer()
+                    
+                    // Stats - Streak and Coins
+                    HStack(spacing: 16) {
+                        // Streak
+                        HStack(spacing: 6) {
+                            Text("🔥")
+                                .font(.system(size: 18))
+                            Text("12")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        
+                        // Coins
+                        HStack(spacing: 6) {
+                            Text("💰")
+                                .font(.system(size: 18))
+                            Text("350")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 60)
+                .padding(.bottom, 20)
+                
+                // Top section with logo and game modes
+                VStack(spacing: 40) {
                     
                     // Large circular B logo with glow
                     ZStack {
@@ -118,60 +147,91 @@ struct GameModeView: View {
                     }
                     .padding(.vertical, 30)
                     
-                    // Quick Play button
-                    NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.fill")
-                                .font(.system(size: 20, weight: .bold))
-                            
-                            Text("Quick Play")
-                                .font(.system(size: 20, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(width: 280, height: 60)
-                        .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.pink,
-                                            Color(red: 1.0, green: 0.3, blue: 0.6)
-                                        ]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
+                    // Game Mode Buttons - 3 stacked
+                    VStack(spacing: 12) {
+                        // 1. Quick Play button
+                        NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                
+                                Text("Quick Play")
+                                    .font(.system(size: 18, weight: .medium))
+                                
+                                Spacer()
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .padding(.horizontal, 24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
                                     )
-                                )
-                                .shadow(color: Color.pink.opacity(0.5), radius: 20, x: 0, y: 10)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color.pink.opacity(0.5), lineWidth: 1)
-                        )
-                    }
-                    
-                    // Multiplayer button (disabled for now)
-                    Button(action: {
-                        // Coming soon
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 20, weight: .bold))
-                            
-                            Text("Multiplayer")
-                                .font(.system(size: 20, weight: .semibold))
+                                    .shadow(color: Color.pink.opacity(0.2), radius: 15, x: 0, y: 4)
+                            )
                         }
-                        .foregroundColor(Color.white.opacity(0.5))
-                        .frame(width: 280, height: 60)
-                        .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(Color(red: 0.15, green: 0.18, blue: 0.22))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 30)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                )
-                        )
+                        
+                        // 2. Daily Challenge button (disabled for now)
+                        Button(action: {
+                            // Coming soon
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 20, weight: .bold))
+                                
+                                Text("Daily Challenge")
+                                    .font(.system(size: 18, weight: .medium))
+                                
+                                Spacer()
+                            }
+                            .foregroundColor(Color.white.opacity(0.5))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .padding(.horizontal, 24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .disabled(true)
+                        
+                        // 3. Multiplayer button (disabled for now)
+                        Button(action: {
+                            // Coming soon
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "person.2.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                
+                                Text("Multiplayer")
+                                    .font(.system(size: 18, weight: .medium))
+                                
+                                Spacer()
+                            }
+                            .foregroundColor(Color.white.opacity(0.5))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .padding(.horizontal, 24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .disabled(true)
                     }
-                    .disabled(true)
+                    .padding(.horizontal, 20)
                     
                     Spacer()
                 }
