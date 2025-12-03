@@ -14,33 +14,35 @@ struct GameModeView: View {
             VStack(spacing: 0) {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
-                    // Beatster logo at top center - all white with correct waveform pattern
-                    HStack(spacing: 12) {
-                        // Left waveform bars - 6 bars with unique heights [12, 16, 20, 18, 14, 10]
-                        // Pattern: peaks at bar 3 (20px tallest)
-                        HStack(spacing: 3) {
-                            ForEach([12, 16, 20, 18, 14, 10], id: \.self) { height in
-                                RoundedRectangle(cornerRadius: 2)
+                    // Beatster logo at top center - white "Beat" + pink "ster" with waveform
+                    HStack(spacing: 8) {
+                        // Left waveform bars - 11 bars very close together creating smooth wave
+                        HStack(spacing: 1.5) {
+                            ForEach([8, 10, 12, 15, 18, 22, 18, 15, 12, 10, 8], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color.white)
-                                    .frame(width: 3, height: CGFloat(height))
+                                    .frame(width: 2.5, height: CGFloat(height))
                             }
                         }
                         
-                        // Beatster text - all white
-                        Text("Beatster")
-                            .font(.system(size: 30, weight: .bold))
-                            .tracking(-0.5)
-                            .foregroundColor(.white)
-                            .shadow(color: Color.white.opacity(0.3), radius: 10, x: 0, y: 0)
-                            .shadow(color: Color.pink.opacity(0.15), radius: 20, x: 0, y: 0)
+                        // Beatster text - "Beat" white, "ster" pink
+                        HStack(spacing: 0) {
+                            Text("Beat")
+                                .font(.system(size: 32, weight: .heavy))
+                                .tracking(-0.5)
+                                .foregroundColor(.white)
+                            Text("ster")
+                                .font(.system(size: 32, weight: .heavy))
+                                .tracking(-0.5)
+                                .foregroundColor(.pink)
+                        }
                         
-                        // Right waveform bars - 6 bars mirrored [10, 14, 18, 20, 16, 12]
-                        // Pattern: peaks at bar 4 (20px tallest)
-                        HStack(spacing: 3) {
-                            ForEach([10, 14, 18, 20, 16, 12], id: \.self) { height in
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.white)
-                                    .frame(width: 3, height: CGFloat(height))
+                        // Right waveform bars - 11 bars mirrored, creating smooth wave
+                        HStack(spacing: 1.5) {
+                            ForEach([8, 10, 12, 15, 18, 22, 18, 15, 12, 10, 8], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1.5)
+                                    .fill(Color.pink)
+                                    .frame(width: 2.5, height: CGFloat(height))
                             }
                         }
                     }
