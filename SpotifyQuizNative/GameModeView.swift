@@ -15,14 +15,30 @@ struct GameModeView: View {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
                     // Beatster logo at top
-                    HStack(spacing: 10) {
-                        // Left waveform bars - 6 bars with varying heights
-                        HStack(spacing: 2) {
-                            ForEach([10, 18, 14, 22, 16, 12], id: \.self) { height in
-                                RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color.pink)
-                                    .frame(width: 3, height: CGFloat(height))
-                            }
+                    HStack(spacing: 4) {
+                        // Left waveform bars - smooth wave pattern: small -> big -> small
+                        HStack(spacing: 1.5) {
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 8)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 12)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 16)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 20)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 16)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 12)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 8)
                         }
                         
                         // Beatster text - "Beat" in white, "ster" in pink
@@ -35,13 +51,29 @@ struct GameModeView: View {
                                 .foregroundColor(.pink)
                         }
                         
-                        // Right waveform bars - 6 bars with varying heights
-                        HStack(spacing: 2) {
-                            ForEach([12, 16, 22, 14, 18, 10], id: \.self) { height in
-                                RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color.pink)
-                                    .frame(width: 3, height: CGFloat(height))
-                            }
+                        // Right waveform bars - smooth wave pattern: small -> big -> small
+                        HStack(spacing: 1.5) {
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 8)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 12)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 16)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 20)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 16)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 12)
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(Color.pink)
+                                .frame(width: 2.5, height: 8)
                         }
                     }
                     .padding(.top, 60)
