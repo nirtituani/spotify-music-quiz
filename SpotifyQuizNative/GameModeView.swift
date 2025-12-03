@@ -103,7 +103,7 @@ struct GameModeView: View {
                     .padding(.vertical, 30)
                     
                     // Quick Play button
-                    NavigationLink(destination: ContentView()) {
+                    NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
                         HStack(spacing: 12) {
                             Image(systemName: "play.fill")
                                 .font(.system(size: 20, weight: .bold))

@@ -11,6 +11,7 @@ struct MainContainerView: View {
             // Main content - show GameModeView when connected
             if spotifyManager.isConnected {
                 GameModeView()
+                    .environmentObject(spotifyManager)
                     .transition(.opacity)
             } else {
                 // Show a placeholder while not connected
@@ -21,6 +22,7 @@ struct MainContainerView: View {
             // Onboarding screens
             if showWelcome && !hasSeenWelcome {
                 WelcomeView(showWelcome: $showWelcome)
+                    .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(2)
                     .onChange(of: showWelcome) { oldValue, newValue in
@@ -33,6 +35,7 @@ struct MainContainerView: View {
             // Show connection screen whenever not connected (and welcome is done)
             if !spotifyManager.isConnected && (hasSeenWelcome || !showWelcome) {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
+                    .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(1)
             }
