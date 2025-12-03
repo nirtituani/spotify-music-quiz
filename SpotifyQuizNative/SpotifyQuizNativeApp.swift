@@ -7,11 +7,14 @@ struct SpotifyQuizNativeApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(spotifyManager)
-                .onOpenURL { url in
-                    handleURL(url)
-                }
+            NavigationView {
+                MainContainerView()
+                    .environmentObject(spotifyManager)
+                    .onOpenURL { url in
+                        handleURL(url)
+                    }
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
     
