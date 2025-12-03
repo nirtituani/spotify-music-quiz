@@ -15,30 +15,24 @@ struct GameModeView: View {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
                     // Beatster logo at top
-                    HStack(spacing: 4) {
-                        // Left waveform bars - smooth wave pattern: small -> big -> small
-                        HStack(spacing: 1.5) {
-                            RoundedRectangle(cornerRadius: 1)
+                    HStack(spacing: 6) {
+                        // Left waveform bars - 5 bars: medium, tall, very tall, tall, short
+                        HStack(spacing: 2) {
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 8)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 14)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 12)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 20)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 16)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 26)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 20)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 20)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 16)
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(Color.pink)
-                                .frame(width: 2.5, height: 12)
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(Color.pink)
-                                .frame(width: 2.5, height: 8)
+                                .frame(width: 3, height: 10)
                         }
                         
                         // Beatster text - "Beat" in white, "ster" in pink
@@ -51,29 +45,23 @@ struct GameModeView: View {
                                 .foregroundColor(.pink)
                         }
                         
-                        // Right waveform bars - smooth wave pattern: small -> big -> small
-                        HStack(spacing: 1.5) {
-                            RoundedRectangle(cornerRadius: 1)
+                        // Right waveform bars - 5 bars: short, tall, very tall, tall, medium (mirrored)
+                        HStack(spacing: 2) {
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 8)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 10)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 12)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 20)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 16)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 26)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 20)
-                            RoundedRectangle(cornerRadius: 1)
+                                .frame(width: 3, height: 20)
+                            RoundedRectangle(cornerRadius: 1.5)
                                 .fill(Color.pink)
-                                .frame(width: 2.5, height: 16)
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(Color.pink)
-                                .frame(width: 2.5, height: 12)
-                            RoundedRectangle(cornerRadius: 1)
-                                .fill(Color.pink)
-                                .frame(width: 2.5, height: 8)
+                                .frame(width: 3, height: 14)
                         }
                     }
                     .padding(.top, 60)
