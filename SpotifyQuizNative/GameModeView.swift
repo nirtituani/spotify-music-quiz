@@ -15,20 +15,32 @@ struct GameModeView: View {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
                     // Beatster logo at top
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         // Left waveform
-                        Image(systemName: "waveform")
-                            .foregroundColor(.pink)
-                            .font(.system(size: 20))
+                        HStack(spacing: 1) {
+                            ForEach(0..<3, id: \.self) { index in
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(Color.pink)
+                                    .frame(width: 2, height: [12, 16, 12][index])
+                            }
+                        }
                         
-                        Text("Beatster")
+                        // Beatster text with gradient
+                        Text("Beat")
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
+                        + Text("ster")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.pink)
                         
                         // Right waveform
-                        Image(systemName: "waveform")
-                            .foregroundColor(.pink)
-                            .font(.system(size: 20))
+                        HStack(spacing: 1) {
+                            ForEach(0..<3, id: \.self) { index in
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(Color.pink)
+                                    .frame(width: 2, height: [12, 16, 12][index])
+                            }
+                        }
                     }
                     .padding(.top, 60)
                     
