@@ -16,9 +16,10 @@ struct GameModeView: View {
                 VStack(spacing: 40) {
                     // Beatster logo at top center - all white with correct waveform pattern
                     HStack(spacing: 12) {
-                        // Left waveform bars - 6 bars: builds toward text [6, 10, 14, 18, 14, 10]
+                        // Left waveform bars - 6 bars with unique heights [12, 16, 20, 18, 14, 10]
+                        // Pattern: peaks at bar 3 (20px tallest)
                         HStack(spacing: 3) {
-                            ForEach([6, 10, 14, 18, 14, 10], id: \.self) { height in
+                            ForEach([12, 16, 20, 18, 14, 10], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(Color.white)
                                     .frame(width: 3, height: CGFloat(height))
@@ -33,9 +34,10 @@ struct GameModeView: View {
                             .shadow(color: Color.white.opacity(0.3), radius: 10, x: 0, y: 0)
                             .shadow(color: Color.pink.opacity(0.15), radius: 20, x: 0, y: 0)
                         
-                        // Right waveform bars - 6 bars: descends from text [10, 14, 18, 14, 10, 6]
+                        // Right waveform bars - 6 bars mirrored [10, 14, 18, 20, 16, 12]
+                        // Pattern: peaks at bar 4 (20px tallest)
                         HStack(spacing: 3) {
-                            ForEach([10, 14, 18, 14, 10, 6], id: \.self) { height in
+                            ForEach([10, 14, 18, 20, 16, 12], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(Color.white)
                                     .frame(width: 3, height: CGFloat(height))
