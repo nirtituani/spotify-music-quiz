@@ -16,12 +16,12 @@ struct GameModeView: View {
                 VStack(spacing: 40) {
                     // Beatster logo at top center - white "Beat" + pink "ster" with waveform
                     HStack(spacing: 8) {
-                        // Left waveform bars - 11 bars very close together creating smooth wave
-                        HStack(spacing: 1.5) {
-                            ForEach([8, 10, 12, 15, 18, 22, 18, 15, 12, 10, 8], id: \.self) { height in
+                        // Left waveform bars - 6 bars: Short, Medium, Tall, Medium, Short, Shortest
+                        HStack(spacing: 2) {
+                            ForEach([10, 14, 20, 14, 10, 6], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color.white)
-                                    .frame(width: 2.5, height: CGFloat(height))
+                                    .fill(Color.pink)
+                                    .frame(width: 3, height: CGFloat(height))
                             }
                         }
                         
@@ -37,12 +37,12 @@ struct GameModeView: View {
                                 .foregroundColor(.pink)
                         }
                         
-                        // Right waveform bars - 11 bars mirrored, creating smooth wave
-                        HStack(spacing: 1.5) {
-                            ForEach([8, 10, 12, 15, 18, 22, 18, 15, 12, 10, 8], id: \.self) { height in
+                        // Right waveform bars - 6 bars mirrored: Shortest, Short, Medium, Tall, Medium, Short
+                        HStack(spacing: 2) {
+                            ForEach([6, 10, 14, 20, 14, 10], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
                                     .fill(Color.pink)
-                                    .frame(width: 2.5, height: CGFloat(height))
+                                    .frame(width: 3, height: CGFloat(height))
                             }
                         }
                     }
