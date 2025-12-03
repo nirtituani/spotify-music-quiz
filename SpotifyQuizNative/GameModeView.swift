@@ -14,59 +14,34 @@ struct GameModeView: View {
             VStack(spacing: 0) {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
-                    // Beatster logo at top with gradient
+                    // Beatster logo at top - white and pink
                     HStack(spacing: 6) {
-                        // Left waveform bars - 5 bars with cyan-green gradient
+                        // Left waveform bars - 5 bars in pink
                         HStack(spacing: 2) {
                             ForEach([14, 20, 26, 20, 10], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0, green: 1, blue: 1),      // Cyan #00FFFF
-                                                Color(red: 0, green: 1, blue: 0.53),   // Cyan-Green #00FF88
-                                            ]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
+                                    .fill(Color.pink)
                                     .frame(width: 3, height: CGFloat(height))
                             }
                         }
                         
-                        // Beatster text with cyan-to-green gradient
-                        Text("Beatster")
-                            .font(.system(size: 40, weight: .heavy, design: .rounded))
-                            .tracking(-1.5) // Tight letter spacing
-                            .foregroundStyle(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color(red: 0, green: 1, blue: 1),      // Cyan #00FFFF
-                                        Color(red: 0, green: 1, blue: 0.53),   // Cyan-Green #00FF88
-                                        Color(red: 0.5, green: 1, blue: 0),    // Lime Green #7FFF00
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .shadow(color: Color(red: 0, green: 1, blue: 1).opacity(0.7), radius: 10, x: 0, y: 0)
-                            .shadow(color: Color(red: 0, green: 1, blue: 1).opacity(0.5), radius: 20, x: 0, y: 0)
-                            .shadow(color: Color(red: 0, green: 1, blue: 0.53).opacity(0.4), radius: 30, x: 0, y: 0)
+                        // Beatster text - "Beat" in white, "ster" in pink
+                        HStack(spacing: 0) {
+                            Text("Beat")
+                                .font(.system(size: 40, weight: .heavy, design: .rounded))
+                                .tracking(-1.5)
+                                .foregroundColor(.white)
+                            Text("ster")
+                                .font(.system(size: 40, weight: .heavy, design: .rounded))
+                                .tracking(-1.5)
+                                .foregroundColor(.pink)
+                        }
                         
-                        // Right waveform bars - 5 bars with cyan-green gradient (mirrored)
+                        // Right waveform bars - 5 bars in pink (mirrored)
                         HStack(spacing: 2) {
                             ForEach([10, 20, 26, 20, 14], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0, green: 1, blue: 0.53),   // Cyan-Green #00FF88
-                                                Color(red: 0.5, green: 1, blue: 0),    // Lime Green #7FFF00
-                                            ]),
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
+                                    .fill(Color.pink)
                                     .frame(width: 3, height: CGFloat(height))
                             }
                         }
