@@ -50,6 +50,9 @@ struct ContentView: View {
             
             NavigationView {
                 ScrollView {
+                    ZStack {
+                        // Dark blue/navy background for ScrollView content
+                        Color(red: 0.118, green: 0.141, blue: 0.200)
                 VStack(spacing: 30) {
                     // Only show main menu if connected
                     if spotifyManager.isConnected {
@@ -336,20 +339,16 @@ struct ContentView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         
-                        // Info
-                        HStack(spacing: 6) {
-                            Image(systemName: "info.circle")
-                                .font(.system(size: 12))
-                            Text("Requires Spotify Premium")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundColor(.white.opacity(0.5))
-                        .padding(.bottom, 40)
+                        Spacer()
+                        
+                        Spacer()
+                    }
                     }
                 }
                 .padding(.horizontal)
             }
                 .navigationBarHidden(true)
+                .background(Color(red: 0.118, green: 0.141, blue: 0.200))
                 .onAppear {
                     print("ContentView appeared, isConnected: \(spotifyManager.isConnected)")
                     
