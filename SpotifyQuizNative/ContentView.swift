@@ -347,7 +347,6 @@ struct ContentView: View {
                 .padding(.bottom, 30)
                     }
                 }
-            }
                 .navigationBarHidden(true)
                 .background(Color(red: 0.118, green: 0.141, blue: 0.200))
                 .onAppear {
