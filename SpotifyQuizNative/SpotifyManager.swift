@@ -22,6 +22,7 @@ class SpotifyManager: NSObject, ObservableObject {
         config.playURI = ""
         config.tokenSwapURL = URL(string: "")
         config.tokenRefreshURL = URL(string: "")
+        // Keep connection alive as long as possible
         return config
     }()
     
@@ -197,28 +198,34 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         // Stop existing timer if any
         keepAliveTimer?.invalidate()
         
-        // Ping the player state every 10 seconds (reduced from 30) to keep connection alive
-        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+        // Aggressive keep-alive: Ping every 5 seconds to prevent any timeout
+        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
             // Check if we're still connected
             if !self.appRemote.isConnected {
-                print("Keep-alive: Connection lost, attempting reconnect...")
+                print("⚠️ Keep-alive: Connection lost, attempting reconnect...")
                 self.attemptReconnect()
                 return
             }
             
-            // Ping player state to maintain connection
+            // Ping player state to maintain connection (prevents SDK timeout)
             self.appRemote.playerAPI?.getPlayerState { result, error in
                 if error == nil {
-                    print("Keep-alive: Connection healthy ✓")
+                    print("✓ Keep-alive: Connection healthy (5s ping)")
                     self.reconnectAttempts = 0 // Reset counter on success
                 } else {
-                    print("Keep-alive: Connection check failed - \(error?.localizedDescription ?? "unknown")")
-                    // Try to reconnect if health check fails
-                    self.attemptReconnect()
+                    print("⚠️ Keep-alive: Connection check failed - \(error?.localizedDescription ?? "unknown")")
+                    // Don't reconnect on single failure, wait for next check
                 }
             }
+            
+            // Additional: Subscribe to player state to keep SDK active
+            self.appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
+                if let error = error {
+                    print("Keep-alive: Subscription refresh - \(error.localizedDescription)")
+                }
+            })
         }
     }
     
