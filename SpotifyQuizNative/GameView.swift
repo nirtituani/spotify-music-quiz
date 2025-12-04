@@ -17,102 +17,189 @@ struct GameView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Score Header
-            HStack(spacing: 40) {
-                VStack {
-                    Text("Round")
-                        .foregroundColor(.secondary)
-                    Text("\(viewModel.round)")
-                        .font(.title)
-                        .fontWeight(.bold)
+        ZStack {
+            // Dark blue/navy background
+            Color(red: 0.118, green: 0.141, blue: 0.200)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                // Header with Beatster logo and stats
+                HStack {
+                    // Beatster logo (small version)
+                    HStack(spacing: 1) {
+                        HStack(spacing: 1.5) {
+                            ForEach([4, 8, 12, 8, 4], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                    .frame(width: 2, height: CGFloat(height))
+                            }
+                        }
+                        
+                        HStack(spacing: 0) {
+                            Text("Beat")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(.white)
+                            Text("ster")
+                                .font(.system(size: 20, weight: .heavy))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                        }
+                        
+                        HStack(spacing: 1.5) {
+                            ForEach([4, 8, 12, 8, 4], id: \.self) { height in
+                                RoundedRectangle(cornerRadius: 1)
+                                    .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                    .frame(width: 2, height: CGFloat(height))
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Round and Score
+                    HStack(spacing: 20) {
+                        VStack(spacing: 2) {
+                            Text("Round")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.6))
+                            Text("\(viewModel.round)")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        
+                        VStack(spacing: 2) {
+                            Text("Score")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.6))
+                            Text("\(viewModel.score)")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                        }
+                    }
                 }
-                .padding()
-                .background(Color.green.opacity(0.2))
-                .cornerRadius(10)
-                
-                VStack {
-                    Text("Score")
-                        .foregroundColor(.secondary)
-                    Text("\(viewModel.score)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                }
-                .padding()
-                .background(Color.green.opacity(0.2))
-                .cornerRadius(10)
-            }
-            .padding(.top)
+                .padding(.horizontal, 20)
+                .padding(.top, 60)
             
             // Playlist Name
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: "music.note.list")
-                    .foregroundColor(.green)
+                    .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
                 Text(playlistName)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            
+            Spacer()
             
             // Timer (only show if not Full Song mode)
             if viewModel.gameState == .playing && viewModel.duration > 0 {
                 ZStack {
+                    // Outer glow
                     Circle()
-                        .stroke(lineWidth: 10)
-                        .opacity(0.3)
-                        .foregroundColor(.green)
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3),
+                                    Color.clear
+                                ]),
+                                center: .center,
+                                startRadius: 60,
+                                endRadius: 100
+                            )
+                        )
+                        .frame(width: 200, height: 200)
+                        .blur(radius: 20)
                     
+                    // Background circle
+                    Circle()
+                        .stroke(lineWidth: 12)
+                        .opacity(0.2)
+                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                    
+                    // Progress circle
                     Circle()
                         .trim(from: 0.0, to: CGFloat(viewModel.timeRemaining) / CGFloat(viewModel.duration))
-                        .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-                        .foregroundColor(.green)
+                        .stroke(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                    Color(red: 1.0, green: 0.1, blue: 0.45)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            style: StrokeStyle(lineWidth: 12, lineCap: .round, lineJoin: .round)
+                        )
                         .rotationEffect(Angle(degrees: 270.0))
                         .animation(.linear(duration: 1.0), value: viewModel.timeRemaining)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.5), radius: 10, x: 0, y: 0)
                     
                     Text("\(viewModel.timeRemaining)")
-                        .font(.system(size: 60, weight: .bold))
+                        .font(.system(size: 64, weight: .bold))
+                        .foregroundColor(.white)
                 }
-                .frame(width: 150, height: 150)
+                .frame(width: 160, height: 160)
                 .padding()
             } else if viewModel.gameState == .playing && viewModel.duration == 0 {
                 // Full Song mode - show playing indicator
                 VStack(spacing: 15) {
-                    Image(systemName: "music.note")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    Text("Playing Full Song")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text("Press 'I Know It!' when ready")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-            }
-            
-            // Current Track Info (when revealing answer)
-            if viewModel.showAnswer {
-                VStack(spacing: 10) {
-                    Text("🎵")
-                        .font(.system(size: 50))
-                    Text(viewModel.currentTrack?.name ?? "Unknown")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text(viewModel.currentTrack?.artists ?? "Unknown Artist")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    if let year = viewModel.currentTrack?.releaseYear {
-                        Text("Released: \(year)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    ZStack {
+                        Circle()
+                            .fill(Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.2))
+                            .frame(width: 100, height: 100)
+                        
+                        Image(systemName: "music.note")
+                            .font(.system(size: 50))
+                            .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
                     }
+                    
+                    Text("Playing Full Song")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text("Press 'I Know It!' when ready")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.6))
                 }
                 .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(15)
             }
             
             Spacer()
+            
+            // Current Track Info (when revealing answer)
+            if viewModel.showAnswer {
+                VStack(spacing: 12) {
+                    Text("🎵")
+                        .font(.system(size: 60))
+                    
+                    Text(viewModel.currentTrack?.name ?? "Unknown")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                    
+                    Text(viewModel.currentTrack?.artists ?? "Unknown Artist")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                        .multilineTextAlignment(.center)
+                    
+                    if let year = viewModel.currentTrack?.releaseYear {
+                        Text("Released: \(year)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                }
+                .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(red: 0.15, green: 0.18, blue: 0.25))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), lineWidth: 1)
+                        )
+                )
+                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.2), radius: 15, x: 0, y: 5)
+                .padding(.horizontal, 20)
+            }
             
             // Action Buttons
             VStack(spacing: 15) {
@@ -120,59 +207,109 @@ struct GameView: View {
                     Button(action: {
                         viewModel.startRound()
                     }) {
-                        Text("Start Round \(viewModel.round)")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.green)
-                            .cornerRadius(15)
+                        HStack {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 18, weight: .bold))
+                            Text("Start Round \(viewModel.round)")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                    Color(red: 1.0, green: 0.1, blue: 0.45)
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(28)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
                     }
                 } else if viewModel.gameState == .playing {
                     HStack(spacing: 15) {
                         Button(action: {
                             viewModel.skipTrack()
                         }) {
-                            Text("Skip")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.orange)
-                                .cornerRadius(15)
+                            HStack {
+                                Image(systemName: "forward.fill")
+                                    .font(.system(size: 16, weight: .bold))
+                                Text("Skip")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(.white.opacity(0.8))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color(red: 0.15, green: 0.18, blue: 0.25))
+                            .cornerRadius(28)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 28)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
                         }
                         
                         Button(action: {
                             viewModel.revealAnswer()
                         }) {
-                            Text("I Know It!")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.green)
-                                .cornerRadius(15)
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 18, weight: .bold))
+                                Text("I Know It!")
+                                    .font(.system(size: 18, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 1.0, green: 0.0, blue: 0.4),
+                                        Color(red: 1.0, green: 0.1, blue: 0.45)
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(28)
+                            .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
                         }
                     }
                 } else if viewModel.gameState == .finished {
                     Button(action: {
                         viewModel.nextRound()
                     }) {
-                        Text("Next Round")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.green)
-                            .cornerRadius(15)
+                        HStack {
+                            Text("Next Round")
+                                .font(.system(size: 18, weight: .semibold))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 18, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                    Color(red: 1.0, green: 0.1, blue: 0.45)
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(28)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
                     }
                 }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 30)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 40)
         }
-        .padding()
-        .navigationTitle("Music Quiz")
+        }
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) { }
