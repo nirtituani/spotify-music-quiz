@@ -20,7 +20,7 @@ struct GameModeView: View {
                         HStack(spacing: 2) {
                             ForEach([6, 13, 23, 34, 19, 5], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color.pink)
+                                    .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
                                     .frame(width: 3, height: CGFloat(height))
                             }
                         }
@@ -41,7 +41,7 @@ struct GameModeView: View {
                         HStack(spacing: 2) {
                             ForEach([5, 19, 34, 23, 11, 5], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color.pink)
+                                    .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
                                     .frame(width: 3, height: CGFloat(height))
                             }
                         }
@@ -55,8 +55,8 @@ struct GameModeView: View {
                             .fill(
                                 RadialGradient(
                                     gradient: Gradient(colors: [
-                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.6),
-                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.3),
+                                        Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.6),
+                                        Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3),
                                         Color.clear
                                     ]),
                                     center: .center,
@@ -72,8 +72,8 @@ struct GameModeView: View {
                             .fill(
                                 RadialGradient(
                                     gradient: Gradient(colors: [
-                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.5),
-                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2),
+                                        Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.5),
+                                        Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.2),
                                         Color.clear
                                     ]),
                                     center: .center,
@@ -89,8 +89,8 @@ struct GameModeView: View {
                             .stroke(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        Color(red: 1.0, green: 0.2, blue: 0.4),
-                                        Color(red: 1.0, green: 0.3, blue: 0.5)
+                                        Color(red: 1.0, green: 0.0, blue: 0.4),
+                                        Color(red: 1.0, green: 0.1, blue: 0.45)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -98,12 +98,12 @@ struct GameModeView: View {
                                 lineWidth: 4
                             )
                             .frame(width: 200, height: 200)
-                            .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.6), radius: 20, x: 0, y: 0)
+                            .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.6), radius: 20, x: 0, y: 0)
                         
                         // Layer 4: Inner pink ring
                         Circle()
                             .stroke(
-                                Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.4),
+                                Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.4),
                                 lineWidth: 2
                             )
                             .frame(width: 170, height: 170)
@@ -121,8 +121,8 @@ struct GameModeView: View {
                                 .foregroundStyle(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color(red: 1.0, green: 0.2, blue: 0.4),
-                                            Color(red: 1.0, green: 0.3, blue: 0.5)
+                                            Color(red: 1.0, green: 0.0, blue: 0.4),
+                                            Color(red: 1.0, green: 0.1, blue: 0.45)
                                         ]),
                                         startPoint: .top,
                                         endPoint: .bottom
@@ -143,8 +143,8 @@ struct GameModeView: View {
                                         .fill(
                                             LinearGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color(red: 1.0, green: 0.2, blue: 0.4),
-                                                    Color(red: 1.0, green: 0.3, blue: 0.5)
+                                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                                    Color(red: 1.0, green: 0.1, blue: 0.45)
                                                 ]),
                                                 startPoint: .top,
                                                 endPoint: .bottom
@@ -227,9 +227,9 @@ struct GameModeView: View {
                                     
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(Color(red: 1.0, green: 0.2, blue: 0.4))
+                                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
                                         .offset(x: 2, y: 0) // Slight offset to center the play triangle
-                                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.5), radius: 4, x: 0, y: 0)
+                                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.5), radius: 4, x: 0, y: 0)
                                 }
                                 
                                 Spacer()
@@ -251,8 +251,8 @@ struct GameModeView: View {
                                 .stroke(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color(red: 1.0, green: 0.2, blue: 0.4),
-                                            Color(red: 1.0, green: 0.3, blue: 0.5)
+                                            Color(red: 1.0, green: 0.0, blue: 0.4),
+                                            Color(red: 1.0, green: 0.1, blue: 0.45)
                                         ]),
                                         startPoint: .leading,
                                         endPoint: .trailing
@@ -260,8 +260,8 @@ struct GameModeView: View {
                                     lineWidth: 2
                                 )
                         )
-                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2), radius: 10, x: 0, y: 3)
-                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.1), radius: 20, x: 0, y: 5)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.2), radius: 10, x: 0, y: 3)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.1), radius: 20, x: 0, y: 5)
                     }
                     
                     // Multiplayer button (disabled for now)
