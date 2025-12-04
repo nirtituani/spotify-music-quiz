@@ -160,33 +160,47 @@ struct GameModeView: View {
                     
                     // Quick Play button
                     NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "play.fill")
-                                .font(.system(size: 20, weight: .bold))
+                        HStack(spacing: 16) {
+                            // Play icon in circle
+                            ZStack {
+                                Circle()
+                                    .fill(Color(red: 1.0, green: 0.2, blue: 0.4))
+                                    .frame(width: 50, height: 50)
+                                
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .offset(x: 2, y: 0) // Slight offset to center the play triangle
+                            }
                             
                             Text("Quick Play")
-                                .font(.system(size: 20, weight: .semibold))
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(.white)
+                            
+                            Spacer()
                         }
-                        .foregroundColor(.white)
-                        .frame(width: 280, height: 60)
+                        .padding(.leading, 8)
+                        .frame(width: 320, height: 70)
                         .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(
+                            RoundedRectangle(cornerRadius: 35)
+                                .fill(Color(red: 0.15, green: 0.18, blue: 0.22))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 35)
+                                .stroke(
                                     LinearGradient(
                                         gradient: Gradient(colors: [
-                                            Color.pink,
-                                            Color(red: 1.0, green: 0.3, blue: 0.6)
+                                            Color(red: 1.0, green: 0.2, blue: 0.4),
+                                            Color(red: 1.0, green: 0.3, blue: 0.5)
                                         ]),
                                         startPoint: .leading,
                                         endPoint: .trailing
-                                    )
+                                    ),
+                                    lineWidth: 2
                                 )
-                                .shadow(color: Color.pink.opacity(0.5), radius: 20, x: 0, y: 10)
                         )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color.pink.opacity(0.5), lineWidth: 1)
-                        )
+                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.4), radius: 15, x: 0, y: 5)
+                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2), radius: 30, x: 0, y: 10)
                     }
                     
                     // Multiplayer button (disabled for now)
