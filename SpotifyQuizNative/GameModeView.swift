@@ -160,26 +160,29 @@ struct GameModeView: View {
                     
                     // Quick Play button
                     NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
-                        HStack(spacing: 16) {
-                            // Play icon in circle
-                            ZStack {
-                                Circle()
-                                    .fill(Color(red: 1.0, green: 0.2, blue: 0.4))
-                                    .frame(width: 50, height: 50)
+                        ZStack {
+                            HStack(spacing: 16) {
+                                // Play icon in black circle (left side)
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.black)
+                                        .frame(width: 50, height: 50)
+                                    
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundColor(Color(red: 1.0, green: 0.2, blue: 0.4))
+                                        .offset(x: 2, y: 0) // Slight offset to center the play triangle
+                                }
                                 
-                                Image(systemName: "play.fill")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .offset(x: 2, y: 0) // Slight offset to center the play triangle
+                                Spacer()
                             }
+                            .padding(.leading, 10)
                             
+                            // Centered "Quick Play" text
                             Text("Quick Play")
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundColor(.white)
-                            
-                            Spacer()
                         }
-                        .padding(.leading, 8)
                         .frame(width: 320, height: 70)
                         .background(
                             RoundedRectangle(cornerRadius: 35)
@@ -207,22 +210,36 @@ struct GameModeView: View {
                     Button(action: {
                         // Coming soon
                     }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "person.2.fill")
-                                .font(.system(size: 20, weight: .bold))
+                        ZStack {
+                            HStack(spacing: 16) {
+                                // Multiplayer icon in black circle (left side)
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.black.opacity(0.5))
+                                        .frame(width: 50, height: 50)
+                                    
+                                    Image(systemName: "person.2.fill")
+                                        .font(.system(size: 18, weight: .bold))
+                                        .foregroundColor(Color.white.opacity(0.3))
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(.leading, 10)
                             
+                            // Centered "Multiplayer" text
                             Text("Multiplayer")
-                                .font(.system(size: 20, weight: .semibold))
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(Color.white.opacity(0.4))
                         }
-                        .foregroundColor(Color.white.opacity(0.5))
-                        .frame(width: 280, height: 60)
+                        .frame(width: 320, height: 70)
                         .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(Color(red: 0.15, green: 0.18, blue: 0.22))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 30)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                )
+                            RoundedRectangle(cornerRadius: 35)
+                                .fill(Color(red: 0.12, green: 0.14, blue: 0.18))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 35)
+                                .stroke(Color.white.opacity(0.15), lineWidth: 2)
                         )
                     }
                     .disabled(true)
