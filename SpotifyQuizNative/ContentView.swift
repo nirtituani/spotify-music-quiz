@@ -49,11 +49,9 @@ struct ContentView: View {
                 .ignoresSafeArea()
             
             NavigationView {
-                ScrollView {
-                    ZStack {
-                        // Dark blue/navy background for ScrollView content
-                        Color(red: 0.118, green: 0.141, blue: 0.200)
-                VStack(spacing: 30) {
+                GeometryReader { geometry in
+                    ScrollView {
+                VStack(spacing: 0) {
                     // Only show main menu if connected
                     if spotifyManager.isConnected {
                         // Header with Beatster logo
@@ -338,13 +336,17 @@ struct ContentView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
-                        
-                        Spacer()
                     }
+                    
+                    // Push button to bottom
+                    Spacer()
+                        .frame(minHeight: geometry.size.height * 0.15)
+                }
+                .frame(minHeight: geometry.size.height)
+                .padding(.horizontal)
+                .padding(.bottom, 30)
                     }
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 40)
             }
                 .navigationBarHidden(true)
                 .background(Color(red: 0.118, green: 0.141, blue: 0.200))
