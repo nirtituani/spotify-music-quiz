@@ -260,8 +260,8 @@ struct GameModeView: View {
                                     lineWidth: 2
                                 )
                         )
-                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.4), radius: 15, x: 0, y: 5)
-                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2), radius: 30, x: 0, y: 10)
+                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2), radius: 10, x: 0, y: 3)
+                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.1), radius: 20, x: 0, y: 5)
                     }
                     
                     // Multiplayer button (disabled for now)
