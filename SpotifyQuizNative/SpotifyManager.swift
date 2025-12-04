@@ -14,6 +14,8 @@ class SpotifyManager: NSObject, ObservableObject {
     private let redirectURI = URL(string: SpotifyConfig.redirectURI)!
     private var connectionToken: String?
     private var keepAliveTimer: Timer?
+    private var reconnectAttempts = 0
+    private let maxReconnectAttempts = 5
     
     private lazy var configuration: SPTConfiguration = {
         let config = SPTConfiguration(clientID: clientID, redirectURL: redirectURI)
@@ -157,6 +159,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
         print("App Remote connected")
         isConnected = true
+        reconnectAttempts = 0 // Reset counter on successful connection
         
         // IMMEDIATELY pause any playback - do this first before anything else
         appRemote.playerAPI?.pause({ result, error in
@@ -194,15 +197,26 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         // Stop existing timer if any
         keepAliveTimer?.invalidate()
         
-        // Ping the player state every 30 seconds to keep connection alive
-        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
-            guard let self = self, self.appRemote.isConnected else { return }
+        // Ping the player state every 10 seconds (reduced from 30) to keep connection alive
+        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
             
+            // Check if we're still connected
+            if !self.appRemote.isConnected {
+                print("Keep-alive: Connection lost, attempting reconnect...")
+                self.attemptReconnect()
+                return
+            }
+            
+            // Ping player state to maintain connection
             self.appRemote.playerAPI?.getPlayerState { result, error in
                 if error == nil {
-                    print("Keep-alive: Connection maintained")
+                    print("Keep-alive: Connection healthy ✓")
+                    self.reconnectAttempts = 0 // Reset counter on success
                 } else {
-                    print("Keep-alive: Connection check failed")
+                    print("Keep-alive: Connection check failed - \(error?.localizedDescription ?? "unknown")")
+                    // Try to reconnect if health check fails
+                    self.attemptReconnect()
                 }
             }
         }
@@ -223,12 +237,31 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         isConnected = false
         stopKeepAliveTimer()
         
-        // Auto-reconnect if we have a token
-        if let token = connectionToken {
-            print("Attempting auto-reconnect...")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                self?.appRemote.connectionParameters.accessToken = token
-                self?.appRemote.connect()
+        // Auto-reconnect immediately
+        attemptReconnect()
+    }
+    
+    private func attemptReconnect() {
+        guard let token = connectionToken else {
+            print("Cannot reconnect: No token available")
+            return
+        }
+        
+        guard reconnectAttempts < maxReconnectAttempts else {
+            print("Max reconnect attempts reached. Please restart app.")
+            return
+        }
+        
+        reconnectAttempts += 1
+        print("Reconnect attempt \(reconnectAttempts)/\(maxReconnectAttempts)...")
+        
+        // Wait briefly before reconnecting
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else { return }
+            
+            if !self.appRemote.isConnected {
+                self.appRemote.connectionParameters.accessToken = token
+                self.appRemote.connect()
             }
         }
     }
