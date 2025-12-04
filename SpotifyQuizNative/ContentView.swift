@@ -340,12 +340,11 @@ struct ContentView: View {
                         .padding(.top, 20)
                         
                         Spacer()
-                        
-                        Spacer()
                     }
                     }
                 }
                 .padding(.horizontal)
+                .padding(.bottom, 40)
             }
                 .navigationBarHidden(true)
                 .background(Color(red: 0.118, green: 0.141, blue: 0.200))
