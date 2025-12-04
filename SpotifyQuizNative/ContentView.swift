@@ -44,41 +44,73 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            // Dark blue/navy background
+            Color(red: 0.118, green: 0.141, blue: 0.200)
+                .ignoresSafeArea()
+            
             NavigationView {
                 ScrollView {
                 VStack(spacing: 30) {
                     // Only show main menu if connected
                     if spotifyManager.isConnected {
-                        // Header
-                        VStack(spacing: 10) {
-                            Text("🎵")
-                                .font(.system(size: 60))
-                            Text("Beatster")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                            Text("Guess the song!")
-                                .font(.title3)
-                                .foregroundColor(.green)
+                        // Header with Beatster logo
+                        VStack(spacing: 15) {
+                            HStack(spacing: 2) {
+                                // Left waveform bars
+                                HStack(spacing: 2) {
+                                    ForEach([6, 13, 23, 34, 19, 5], id: \.self) { height in
+                                        RoundedRectangle(cornerRadius: 1.5)
+                                            .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                            .frame(width: 3, height: CGFloat(height))
+                                    }
+                                }
+                                
+                                // Beatster text
+                                HStack(spacing: 0) {
+                                    Text("Beat")
+                                        .font(.system(size: 38, weight: .heavy))
+                                        .tracking(-0.5)
+                                        .foregroundColor(.white)
+                                    Text("ster")
+                                        .font(.system(size: 38, weight: .heavy))
+                                        .tracking(-0.5)
+                                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                }
+                                
+                                // Right waveform bars
+                                HStack(spacing: 2) {
+                                    ForEach([5, 19, 34, 23, 11, 5], id: \.self) { height in
+                                        RoundedRectangle(cornerRadius: 1.5)
+                                            .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                            .frame(width: 3, height: CGFloat(height))
+                                    }
+                                }
+                            }
+                            
+                            Text("Choose Your Music")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.white.opacity(0.7))
                         }
-                        .padding(.top)
+                        .padding(.top, 60)
                         
                         // Connection Status
-                        HStack {
+                        HStack(spacing: 8) {
                             Circle()
-                                .fill(Color.green)
-                                .frame(width: 12, height: 12)
+                                .fill(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                .frame(width: 8, height: 8)
                             Text("Connected to Spotify")
-                                .foregroundColor(.secondary)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.white.opacity(0.6))
                         }
+                        .padding(.top, 5)
                         
-                        // Game Settings
                         // Game Settings
                         VStack(spacing: 25) {
                             // Playlist Selector
-                            VStack(alignment: .leading, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 Text("Select Playlist")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
                                 
                                 Menu {
                                     Button(action: { selectedPlaylist = "random" }) {
@@ -108,63 +140,129 @@ struct ContentView: View {
                                     }
                                 } label: {
                                     HStack {
+                                        Image(systemName: "music.note.list")
+                                            .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
                                         Text(getPlaylistName())
-                                            .foregroundColor(.primary)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.white)
                                         Spacer()
                                         Image(systemName: "chevron.down")
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(.white.opacity(0.5))
                                     }
-                                    .padding()
-                                    .background(Color.green.opacity(0.1))
-                                    .cornerRadius(10)
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color(red: 0.15, green: 0.18, blue: 0.25))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
                                 }
                             }
                             
                             // Duration Selector
-                            VStack(alignment: .leading, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 Text("Song Duration")
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
                                 
-                                HStack(spacing: 15) {
+                                HStack(spacing: 12) {
                                     ForEach(durations, id: \.self) { duration in
                                         Button(action: {
                                             selectedDuration = duration
                                         }) {
-                                            Text(duration == 0 ? "Full Song" : "\(duration) sec")
-                                                .font(.subheadline)
-                                                .fontWeight(selectedDuration == duration ? .bold : .regular)
-                                                .foregroundColor(selectedDuration == duration ? .white : .primary)
-                                                .padding()
-                                                .frame(maxWidth: .infinity)
-                                                .background(selectedDuration == duration ? Color.green : Color.green.opacity(0.1))
-                                                .cornerRadius(10)
+                                            VStack(spacing: 4) {
+                                                Image(systemName: duration == 0 ? "infinity" : "timer")
+                                                    .font(.system(size: 20))
+                                                Text(duration == 0 ? "Full" : "\(duration)s")
+                                                    .font(.system(size: 14, weight: .semibold))
+                                            }
+                                            .foregroundColor(selectedDuration == duration ? .white : .white.opacity(0.6))
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 70)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(
+                                                        selectedDuration == duration ?
+                                                        LinearGradient(
+                                                            gradient: Gradient(colors: [
+                                                                Color(red: 1.0, green: 0.0, blue: 0.4),
+                                                                Color(red: 1.0, green: 0.1, blue: 0.45)
+                                                            ]),
+                                                            startPoint: .topLeading,
+                                                            endPoint: .bottomTrailing
+                                                        ) :
+                                                        LinearGradient(
+                                                            gradient: Gradient(colors: [
+                                                                Color(red: 0.15, green: 0.18, blue: 0.25),
+                                                                Color(red: 0.15, green: 0.18, blue: 0.25)
+                                                            ]),
+                                                            startPoint: .topLeading,
+                                                            endPoint: .bottomTrailing
+                                                        )
+                                                    )
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 12)
+                                                            .stroke(
+                                                                selectedDuration == duration ?
+                                                                Color(red: 1.0, green: 0.0, blue: 0.4) :
+                                                                Color.white.opacity(0.2),
+                                                                lineWidth: selectedDuration == duration ? 2 : 1
+                                                            )
+                                                    )
+                                            )
+                                            .shadow(
+                                                color: selectedDuration == duration ?
+                                                Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3) :
+                                                Color.clear,
+                                                radius: 10,
+                                                x: 0,
+                                                y: 5
+                                            )
                                         }
                                     }
                                 }
                             }
                             
                             // Start Game Button
-                            NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration, playlistName: getPlaylistName())) {
-                                HStack {
+                            NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration, playlistName: getPlaylistName()).environmentObject(spotifyManager)) {
+                                HStack(spacing: 12) {
                                     Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 24))
                                     Text("Start Game")
+                                        .font(.system(size: 20, weight: .bold))
                                 }
-                                .font(.headline)
                                 .foregroundColor(.white)
-                                .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.green)
-                                .cornerRadius(15)
+                                .frame(height: 60)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 1.0, green: 0.0, blue: 0.4),
+                                            Color(red: 1.0, green: 0.1, blue: 0.45)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(30)
+                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.4), radius: 20, x: 0, y: 10)
                             }
+                            .padding(.top, 10)
                         }
-                        .padding()
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
                         
                         // Info
-                        Text("Requires Spotify Premium")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
+                        HStack(spacing: 6) {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: 12))
+                            Text("Requires Spotify Premium")
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundColor(.white.opacity(0.5))
+                        .padding(.bottom, 40)
                     }
                 }
                 .padding(.horizontal)
