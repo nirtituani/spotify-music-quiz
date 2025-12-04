@@ -13,6 +13,7 @@ class SpotifyManager: NSObject, ObservableObject {
     private let clientID = SpotifyConfig.clientID
     private let redirectURI = URL(string: SpotifyConfig.redirectURI)!
     private var connectionToken: String?
+    private var keepAliveTimer: Timer?
     
     private lazy var configuration: SPTConfiguration = {
         let config = SPTConfiguration(clientID: clientID, redirectURL: redirectURI)
@@ -182,8 +183,34 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
+        // Start keep-alive timer to prevent disconnection
+        startKeepAliveTimer()
+        
         // Update UI state
         isPlaying = false
+    }
+    
+    private func startKeepAliveTimer() {
+        // Stop existing timer if any
+        keepAliveTimer?.invalidate()
+        
+        // Ping the player state every 30 seconds to keep connection alive
+        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+            guard let self = self, self.appRemote.isConnected else { return }
+            
+            self.appRemote.playerAPI?.getPlayerState { result, error in
+                if error == nil {
+                    print("Keep-alive: Connection maintained")
+                } else {
+                    print("Keep-alive: Connection check failed")
+                }
+            }
+        }
+    }
+    
+    private func stopKeepAliveTimer() {
+        keepAliveTimer?.invalidate()
+        keepAliveTimer = nil
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
@@ -194,6 +221,16 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
         print("App Remote disconnected: \(error?.localizedDescription ?? "no error")")
         isConnected = false
+        stopKeepAliveTimer()
+        
+        // Auto-reconnect if we have a token
+        if let token = connectionToken {
+            print("Attempting auto-reconnect...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.appRemote.connectionParameters.accessToken = token
+                self?.appRemote.connect()
+            }
+        }
     }
 }
 
