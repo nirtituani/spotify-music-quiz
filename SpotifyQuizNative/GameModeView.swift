@@ -162,16 +162,49 @@ struct GameModeView: View {
                     NavigationLink(destination: ContentView().environmentObject(spotifyManager)) {
                         ZStack {
                             HStack(spacing: 16) {
-                                // Play icon in black circle (left side)
+                                // Play icon in black circle button (left side)
                                 ZStack {
+                                    // Outer shadow for depth
                                     Circle()
-                                        .fill(Color.black)
+                                        .fill(Color.black.opacity(0.4))
+                                        .frame(width: 50, height: 50)
+                                        .blur(radius: 4)
+                                        .offset(x: 0, y: 2)
+                                    
+                                    // Main black circle with gradient for depth
+                                    Circle()
+                                        .fill(
+                                            RadialGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(red: 0.15, green: 0.15, blue: 0.15),
+                                                    Color.black
+                                                ]),
+                                                center: .center,
+                                                startRadius: 5,
+                                                endRadius: 25
+                                            )
+                                        )
+                                        .frame(width: 50, height: 50)
+                                    
+                                    // Inner shadow (top highlight)
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.1),
+                                                    Color.clear
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .center
+                                            )
+                                        )
                                         .frame(width: 50, height: 50)
                                     
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 20, weight: .bold))
                                         .foregroundColor(Color(red: 1.0, green: 0.2, blue: 0.4))
                                         .offset(x: 2, y: 0) // Slight offset to center the play triangle
+                                        .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.5), radius: 4, x: 0, y: 0)
                                 }
                                 
                                 Spacer()
@@ -212,10 +245,42 @@ struct GameModeView: View {
                     }) {
                         ZStack {
                             HStack(spacing: 16) {
-                                // Multiplayer icon in black circle (left side)
+                                // Multiplayer icon in black circle button (left side)
                                 ZStack {
+                                    // Outer shadow for depth
                                     Circle()
-                                        .fill(Color.black.opacity(0.5))
+                                        .fill(Color.black.opacity(0.3))
+                                        .frame(width: 50, height: 50)
+                                        .blur(radius: 4)
+                                        .offset(x: 0, y: 2)
+                                    
+                                    // Main dark circle with gradient for depth
+                                    Circle()
+                                        .fill(
+                                            RadialGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(red: 0.12, green: 0.12, blue: 0.12),
+                                                    Color.black.opacity(0.8)
+                                                ]),
+                                                center: .center,
+                                                startRadius: 5,
+                                                endRadius: 25
+                                            )
+                                        )
+                                        .frame(width: 50, height: 50)
+                                    
+                                    // Inner shadow (top highlight)
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.05),
+                                                    Color.clear
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .center
+                                            )
+                                        )
                                         .frame(width: 50, height: 50)
                                     
                                     Image(systemName: "person.2.fill")
