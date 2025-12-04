@@ -7,8 +7,8 @@ struct GameModeView: View {
     
     var body: some View {
         ZStack {
-            // Dark background - #0F0F12
-            Color(red: 0.059, green: 0.059, blue: 0.071)
+            // Dark blue/navy background - #1E2433
+            Color(red: 0.118, green: 0.141, blue: 0.200)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -108,9 +108,9 @@ struct GameModeView: View {
                             )
                             .frame(width: 170, height: 170)
                         
-                        // Layer 5: Dark center fill
+                        // Layer 5: Dark center fill (matches background)
                         Circle()
-                            .fill(Color(red: 0.059, green: 0.059, blue: 0.071))
+                            .fill(Color(red: 0.118, green: 0.141, blue: 0.200))
                             .frame(width: 166, height: 166)
                         
                         // Layer 6: 'B' letter (outlined/hollow) with integrated waveform bars
