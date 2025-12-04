@@ -113,35 +113,27 @@ struct GameModeView: View {
                             .fill(Color(red: 0.059, green: 0.059, blue: 0.071))
                             .frame(width: 166, height: 166)
                         
-                        // Layer 6: 'B' letter with integrated waveform bars
+                        // Layer 6: 'B' letter (outlined/hollow) with integrated waveform bars
                         ZStack {
-                            // Outlined 'B' letter
+                            // Hollow/Outlined 'B' letter using stroke
                             Text("B")
-                                .font(.system(size: 80, weight: .bold))
-                                .foregroundColor(.clear)
-                                .overlay(
-                                    Text("B")
-                                        .font(.system(size: 80, weight: .bold))
-                                        .foregroundColor(Color(red: 1.0, green: 0.2, blue: 0.4))
-                                        .mask(
-                                            Text("B")
-                                                .font(.system(size: 80, weight: .bold))
-                                        )
+                                .font(.system(size: 80, weight: .heavy))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 1.0, green: 0.2, blue: 0.4),
+                                            Color(red: 1.0, green: 0.3, blue: 0.5)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
                                 )
                                 .overlay(
+                                    // Create the hollow effect by masking the center
                                     Text("B")
-                                        .font(.system(size: 80, weight: .bold))
-                                        .foregroundStyle(
-                                            .linearGradient(
-                                                colors: [
-                                                    Color(red: 1.0, green: 0.2, blue: 0.4),
-                                                    Color(red: 1.0, green: 0.3, blue: 0.5)
-                                                ],
-                                                startPoint: .top,
-                                                endPoint: .bottom
-                                            )
-                                        )
-                                        .blendMode(.screen)
+                                        .font(.system(size: 80, weight: .heavy))
+                                        .foregroundColor(Color(red: 0.059, green: 0.059, blue: 0.071))
+                                        .scaleEffect(0.85) // Slightly smaller to create stroke effect
                                 )
                             
                             // Waveform bars integrated into the 'B' (left side of B)
@@ -161,7 +153,7 @@ struct GameModeView: View {
                                         .frame(width: 3, height: CGFloat(height))
                                 }
                             }
-                            .offset(x: -15, y: 0) // Position bars on left side of 'B'
+                            .offset(x: -18, y: 0) // Position bars on left side of 'B'
                         }
                     }
                     .padding(.vertical, 30)
