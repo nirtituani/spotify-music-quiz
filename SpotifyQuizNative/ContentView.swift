@@ -51,9 +51,9 @@ struct ContentView: View {
             NavigationView {
                 GeometryReader { geometry in
                     ScrollView {
-                VStack(spacing: 0) {
-                    // Only show main menu if connected
-                    if spotifyManager.isConnected {
+                        VStack(spacing: 0) {
+                            // Only show main menu if connected
+                            if spotifyManager.isConnected {
                         // Header with Beatster logo
                         VStack(spacing: 15) {
                             HStack(spacing: 2) {
@@ -337,14 +337,14 @@ struct ContentView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         
-                        // Push button to bottom
-                        Spacer()
-                            .frame(minHeight: geometry.size.height * 0.15)
-                    }
-                }
-                .frame(minHeight: geometry.size.height)
-                .padding(.horizontal)
-                .padding(.bottom, 30)
+                                // Push button to bottom
+                                Spacer()
+                                    .frame(minHeight: 100)
+                            }
+                        }
+                        .frame(minHeight: geometry.size.height)
+                        .padding(.horizontal)
+                        .padding(.bottom, 30)
                     }
                 }
                 .navigationBarHidden(true)
