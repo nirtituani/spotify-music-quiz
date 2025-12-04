@@ -15,8 +15,8 @@ struct GameModeView: View {
                 // Top section with logo and game modes
                 VStack(spacing: 40) {
                     // Beatster logo at top center - white "Beat" + pink "ster" with waveform
-                    HStack(spacing: 6) {
-                        // Left waveform bars - 6 bars, each +1 unit taller: [6, 13, 23, 34, 19, 5]
+                    HStack(spacing: 2) {
+                        // Left waveform bars - 6 bars, very close to "B": [6, 13, 23, 34, 19, 5]
                         HStack(spacing: 2) {
                             ForEach([6, 13, 23, 34, 19, 5], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
@@ -37,7 +37,7 @@ struct GameModeView: View {
                                 .foregroundColor(.pink)
                         }
                         
-                        // Right waveform bars - 6 bars, each +1 unit taller: [5, 19, 34, 23, 11, 5]
+                        // Right waveform bars - 6 bars, very close to "r": [5, 19, 34, 23, 11, 5]
                         HStack(spacing: 2) {
                             ForEach([5, 19, 34, 23, 11, 5], id: \.self) { height in
                                 RoundedRectangle(cornerRadius: 1.5)
