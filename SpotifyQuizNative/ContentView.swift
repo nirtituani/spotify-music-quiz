@@ -225,31 +225,113 @@ struct ContentView: View {
                                 }
                             }
                             
+                            Spacer()
+                            
                             // Start Game Button
                             NavigationLink(destination: GameView(playlistId: getPlaylistIdForBackend(), duration: selectedDuration, playlistName: getPlaylistName()).environmentObject(spotifyManager)) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "play.circle.fill")
-                                        .font(.system(size: 24))
+                                ZStack {
+                                    HStack(spacing: 16) {
+                                        // Play icon in black circle button (left side)
+                                        ZStack {
+                                            // Deeper outer shadow for stronger 3D effect
+                                            Circle()
+                                                .fill(Color.black.opacity(0.7))
+                                                .frame(width: 52, height: 52)
+                                                .blur(radius: 6)
+                                                .offset(x: 0, y: 3)
+                                            
+                                            // Inner shadow layer
+                                            Circle()
+                                                .fill(Color.black.opacity(0.5))
+                                                .frame(width: 50, height: 50)
+                                                .blur(radius: 2)
+                                                .offset(x: 0, y: 1)
+                                            
+                                            // Main black circle with gradient for depth
+                                            Circle()
+                                                .fill(
+                                                    RadialGradient(
+                                                        gradient: Gradient(colors: [
+                                                            Color(red: 0.18, green: 0.18, blue: 0.18),
+                                                            Color.black
+                                                        ]),
+                                                        center: .center,
+                                                        startRadius: 5,
+                                                        endRadius: 25
+                                                    )
+                                                )
+                                                .frame(width: 50, height: 50)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color.black.opacity(0.3), lineWidth: 1)
+                                                )
+                                            
+                                            // Bottom inner shadow (pressed effect)
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            Color.clear,
+                                                            Color.black.opacity(0.3)
+                                                        ]),
+                                                        startPoint: .top,
+                                                        endPoint: .bottom
+                                                    )
+                                                )
+                                                .frame(width: 48, height: 48)
+                                            
+                                            // Top highlight
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [
+                                                            Color.white.opacity(0.15),
+                                                            Color.clear
+                                                        ]),
+                                                        startPoint: .top,
+                                                        endPoint: .center
+                                                    )
+                                                )
+                                                .frame(width: 50, height: 50)
+                                            
+                                            Image(systemName: "play.fill")
+                                                .font(.system(size: 20, weight: .bold))
+                                                .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                                                .offset(x: 2, y: 0)
+                                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.5), radius: 4, x: 0, y: 0)
+                                        }
+                                        
+                                        Spacer()
+                                    }
+                                    .padding(.leading, 10)
+                                    
+                                    // Centered "Start Game" text
                                     Text("Start Game")
-                                        .font(.system(size: 20, weight: .bold))
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundColor(.white)
                                 }
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
+                                .frame(width: 320, height: 70)
                                 .background(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color(red: 1.0, green: 0.0, blue: 0.4),
-                                            Color(red: 1.0, green: 0.1, blue: 0.45)
-                                        ]),
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    RoundedRectangle(cornerRadius: 35)
+                                        .fill(Color(red: 0.15, green: 0.18, blue: 0.22))
                                 )
-                                .cornerRadius(30)
-                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.4), radius: 20, x: 0, y: 10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 35)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                                    Color(red: 1.0, green: 0.1, blue: 0.45)
+                                                ]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.2), radius: 10, x: 0, y: 3)
+                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.1), radius: 20, x: 0, y: 5)
                             }
-                            .padding(.top, 10)
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
