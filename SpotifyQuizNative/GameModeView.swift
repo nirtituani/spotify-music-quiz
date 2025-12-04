@@ -48,32 +48,49 @@ struct GameModeView: View {
                     }
                     .padding(.top, 60)
                     
-                    // Large circular B logo with glow
+                    // Central emblem with 'B' logo and integrated waveform
                     ZStack {
-                        // Outer glow circles
+                        // Layer 1: Outer glow effect (most outer blur)
                         Circle()
-                            .stroke(
-                                Color.pink.opacity(0.3),
-                                lineWidth: 2
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.6),
+                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.3),
+                                        Color.clear
+                                    ]),
+                                    center: .center,
+                                    startRadius: 40,
+                                    endRadius: 140
+                                )
                             )
-                            .frame(width: 240, height: 240)
-                            .blur(radius: 10)
+                            .frame(width: 280, height: 280)
+                            .blur(radius: 40)
                         
+                        // Layer 2: Inner glow circle
                         Circle()
-                            .stroke(
-                                Color.pink.opacity(0.4),
-                                lineWidth: 3
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.5),
+                                        Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.2),
+                                        Color.clear
+                                    ]),
+                                    center: .center,
+                                    startRadius: 20,
+                                    endRadius: 100
+                                )
                             )
                             .frame(width: 220, height: 220)
-                            .blur(radius: 8)
+                            .blur(radius: 25)
                         
-                        // Main glowing circle
+                        // Layer 3: Outer pink ring
                         Circle()
                             .stroke(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        Color.pink,
-                                        Color(red: 1.0, green: 0.3, blue: 0.6)
+                                        Color(red: 1.0, green: 0.2, blue: 0.4),
+                                        Color(red: 1.0, green: 0.3, blue: 0.5)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -81,39 +98,70 @@ struct GameModeView: View {
                                 lineWidth: 4
                             )
                             .frame(width: 200, height: 200)
-                            .shadow(color: Color.pink.opacity(0.8), radius: 30, x: 0, y: 0)
-                            .shadow(color: Color.pink.opacity(0.6), radius: 50, x: 0, y: 0)
-                            .scaleEffect(pulseAnimation ? 1.05 : 1.0)
-                            .animation(
-                                Animation.easeInOut(duration: 2.0)
-                                    .repeatForever(autoreverses: true),
-                                value: pulseAnimation
-                            )
+                            .shadow(color: Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.6), radius: 20, x: 0, y: 0)
                         
-                        // B logo with waveform
-                        HStack(spacing: 2) {
-                            // Left waveform bars
-                            VStack(spacing: 2) {
-                                ForEach(0..<3, id: \.self) { _ in
-                                    RoundedRectangle(cornerRadius: 1)
-                                        .fill(Color.pink)
-                                        .frame(width: 2, height: 20)
-                                }
-                            }
-                            
-                            // B letter
+                        // Layer 4: Inner pink ring
+                        Circle()
+                            .stroke(
+                                Color(red: 1.0, green: 0.2, blue: 0.4).opacity(0.4),
+                                lineWidth: 2
+                            )
+                            .frame(width: 170, height: 170)
+                        
+                        // Layer 5: Dark center fill
+                        Circle()
+                            .fill(Color(red: 0.059, green: 0.059, blue: 0.071))
+                            .frame(width: 166, height: 166)
+                        
+                        // Layer 6: 'B' letter with integrated waveform bars
+                        ZStack {
+                            // Outlined 'B' letter
                             Text("B")
                                 .font(.system(size: 80, weight: .bold))
-                                .foregroundColor(.pink)
+                                .foregroundColor(.clear)
+                                .overlay(
+                                    Text("B")
+                                        .font(.system(size: 80, weight: .bold))
+                                        .foregroundColor(Color(red: 1.0, green: 0.2, blue: 0.4))
+                                        .mask(
+                                            Text("B")
+                                                .font(.system(size: 80, weight: .bold))
+                                        )
+                                )
+                                .overlay(
+                                    Text("B")
+                                        .font(.system(size: 80, weight: .bold))
+                                        .foregroundStyle(
+                                            .linearGradient(
+                                                colors: [
+                                                    Color(red: 1.0, green: 0.2, blue: 0.4),
+                                                    Color(red: 1.0, green: 0.3, blue: 0.5)
+                                                ],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .blendMode(.screen)
+                                )
                             
-                            // Right waveform bars
-                            VStack(spacing: 2) {
-                                ForEach(0..<3, id: \.self) { _ in
-                                    RoundedRectangle(cornerRadius: 1)
-                                        .fill(Color.pink)
-                                        .frame(width: 2, height: 20)
+                            // Waveform bars integrated into the 'B' (left side of B)
+                            HStack(spacing: 3) {
+                                ForEach([12, 18, 24, 18, 12], id: \.self) { height in
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(red: 1.0, green: 0.2, blue: 0.4),
+                                                    Color(red: 1.0, green: 0.3, blue: 0.5)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .frame(width: 3, height: CGFloat(height))
                                 }
                             }
+                            .offset(x: -15, y: 0) // Position bars on left side of 'B'
                         }
                     }
                     .padding(.vertical, 30)
