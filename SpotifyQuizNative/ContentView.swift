@@ -336,11 +336,11 @@ struct ContentView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
+                        
+                        // Push button to bottom
+                        Spacer()
+                            .frame(minHeight: geometry.size.height * 0.15)
                     }
-                    
-                    // Push button to bottom
-                    Spacer()
-                        .frame(minHeight: geometry.size.height * 0.15)
                 }
                 .frame(minHeight: geometry.size.height)
                 .padding(.horizontal)
