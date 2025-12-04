@@ -164,19 +164,26 @@ struct GameModeView: View {
                             HStack(spacing: 16) {
                                 // Play icon in black circle button (left side)
                                 ZStack {
-                                    // Outer shadow for depth
+                                    // Deeper outer shadow for stronger 3D effect
                                     Circle()
-                                        .fill(Color.black.opacity(0.4))
+                                        .fill(Color.black.opacity(0.7))
+                                        .frame(width: 52, height: 52)
+                                        .blur(radius: 6)
+                                        .offset(x: 0, y: 3)
+                                    
+                                    // Inner shadow layer
+                                    Circle()
+                                        .fill(Color.black.opacity(0.5))
                                         .frame(width: 50, height: 50)
-                                        .blur(radius: 4)
-                                        .offset(x: 0, y: 2)
+                                        .blur(radius: 2)
+                                        .offset(x: 0, y: 1)
                                     
                                     // Main black circle with gradient for depth
                                     Circle()
                                         .fill(
                                             RadialGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color(red: 0.15, green: 0.15, blue: 0.15),
+                                                    Color(red: 0.18, green: 0.18, blue: 0.18),
                                                     Color.black
                                                 ]),
                                                 center: .center,
@@ -185,13 +192,31 @@ struct GameModeView: View {
                                             )
                                         )
                                         .frame(width: 50, height: 50)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.black.opacity(0.3), lineWidth: 1)
+                                        )
                                     
-                                    // Inner shadow (top highlight)
+                                    // Bottom inner shadow (pressed effect)
                                     Circle()
                                         .fill(
                                             LinearGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color.white.opacity(0.1),
+                                                    Color.clear,
+                                                    Color.black.opacity(0.3)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .frame(width: 48, height: 48)
+                                    
+                                    // Top highlight
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.15),
                                                     Color.clear
                                                 ]),
                                                 startPoint: .top,
@@ -247,20 +272,27 @@ struct GameModeView: View {
                             HStack(spacing: 16) {
                                 // Multiplayer icon in black circle button (left side)
                                 ZStack {
-                                    // Outer shadow for depth
+                                    // Deeper outer shadow for stronger 3D effect
                                     Circle()
-                                        .fill(Color.black.opacity(0.3))
+                                        .fill(Color.black.opacity(0.6))
+                                        .frame(width: 52, height: 52)
+                                        .blur(radius: 6)
+                                        .offset(x: 0, y: 3)
+                                    
+                                    // Inner shadow layer
+                                    Circle()
+                                        .fill(Color.black.opacity(0.4))
                                         .frame(width: 50, height: 50)
-                                        .blur(radius: 4)
-                                        .offset(x: 0, y: 2)
+                                        .blur(radius: 2)
+                                        .offset(x: 0, y: 1)
                                     
                                     // Main dark circle with gradient for depth
                                     Circle()
                                         .fill(
                                             RadialGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color(red: 0.12, green: 0.12, blue: 0.12),
-                                                    Color.black.opacity(0.8)
+                                                    Color(red: 0.15, green: 0.15, blue: 0.15),
+                                                    Color.black.opacity(0.9)
                                                 ]),
                                                 center: .center,
                                                 startRadius: 5,
@@ -268,13 +300,31 @@ struct GameModeView: View {
                                             )
                                         )
                                         .frame(width: 50, height: 50)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.black.opacity(0.3), lineWidth: 1)
+                                        )
                                     
-                                    // Inner shadow (top highlight)
+                                    // Bottom inner shadow (pressed effect)
                                     Circle()
                                         .fill(
                                             LinearGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color.white.opacity(0.05),
+                                                    Color.clear,
+                                                    Color.black.opacity(0.25)
+                                                ]),
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .frame(width: 48, height: 48)
+                                    
+                                    // Top highlight
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color.white.opacity(0.08),
                                                     Color.clear
                                                 ]),
                                                 startPoint: .top,
