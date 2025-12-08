@@ -17,6 +17,10 @@ class SpotifyManager: NSObject, ObservableObject {
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 5
     
+    // Token storage keys
+    private let tokenKey = "SpotifyAccessToken"
+    private let tokenExpirationKey = "SpotifyTokenExpiration"
+    
     private lazy var configuration: SPTConfiguration = {
         let config = SPTConfiguration(clientID: clientID, redirectURL: redirectURI)
         config.playURI = ""
@@ -37,6 +41,8 @@ class SpotifyManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
+        // Try to restore saved token on init
+        restoreToken()
     }
     
     // MARK: - Public Methods
@@ -53,6 +59,9 @@ class SpotifyManager: NSObject, ObservableObject {
         self.connectionToken = token
         appRemote.connectionParameters.accessToken = token
         print("Connection token set: \(token.prefix(10))...")
+        
+        // Save token persistently
+        saveToken(token)
         
         // Connect and immediately pause to prevent auto-play
         if !appRemote.isConnected {
@@ -271,6 +280,45 @@ extension SpotifyManager: SPTAppRemoteDelegate {
                 self.appRemote.connect()
             }
         }
+    }
+    
+    // MARK: - Token Persistence
+    
+    private func saveToken(_ token: String) {
+        UserDefaults.standard.set(token, forKey: tokenKey)
+        // Save expiration time (Spotify tokens typically expire in 1 hour, we'll use 50 minutes to be safe)
+        let expirationDate = Date().addingTimeInterval(50 * 60) // 50 minutes
+        UserDefaults.standard.set(expirationDate, forKey: tokenExpirationKey)
+        print("✓ Token saved to UserDefaults (expires in 50 minutes)")
+    }
+    
+    private func restoreToken() {
+        guard let savedToken = UserDefaults.standard.string(forKey: tokenKey),
+              let expirationDate = UserDefaults.standard.object(forKey: tokenExpirationKey) as? Date else {
+            print("No saved token found")
+            return
+        }
+        
+        // Check if token is still valid
+        if Date() < expirationDate {
+            print("✓ Restored valid token from UserDefaults")
+            connectionToken = savedToken
+            appRemote.connectionParameters.accessToken = savedToken
+            
+            // Auto-connect with saved token
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.connect()
+            }
+        } else {
+            print("⚠️ Saved token expired, clearing...")
+            clearToken()
+        }
+    }
+    
+    private func clearToken() {
+        UserDefaults.standard.removeObject(forKey: tokenKey)
+        UserDefaults.standard.removeObject(forKey: tokenExpirationKey)
+        connectionToken = nil
     }
 }
 
