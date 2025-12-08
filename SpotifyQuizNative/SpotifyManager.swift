@@ -169,7 +169,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         reconnectTimeoutTimer?.invalidate()
         reconnectTimeoutTimer = nil
         
-        // Subscribe to player state updates (but don't pause - let user control playback)
+        // Subscribe to player state updates
         appRemote.playerAPI?.delegate = self
         appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
             if let error = error {
@@ -178,6 +178,22 @@ extension SpotifyManager: SPTAppRemoteDelegate {
                 print("✓ Subscribed to player state updates")
             }
         })
+        
+        // IMPORTANT: Pause ONCE on initial connection (Spotify OAuth starts playing automatically)
+        // But do it gently with a delay to not interfere with the connection establishment
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            // Check if user hasn't already started playing something
+            appRemote.playerAPI?.getPlayerState { result, error in
+                if let playerState = result as? SPTAppRemotePlayerState, !playerState.isPaused {
+                    // Only pause if something is actually playing (from OAuth auto-play)
+                    appRemote.playerAPI?.pause({ pauseResult, pauseError in
+                        if pauseError == nil {
+                            print("✓ Paused OAuth auto-play")
+                        }
+                    })
+                }
+            }
+        }
         
         // Start lightweight keep-alive monitor
         startKeepAliveTimer()
