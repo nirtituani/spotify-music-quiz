@@ -17,6 +17,7 @@ class SpotifyManager: NSObject, ObservableObject {
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 10 // Increased from 5 to 10
     private var reconnectTimeoutTimer: Timer?
+    private var isConnecting = false // Track if connection is in progress
     
     // Token storage keys
     private let tokenKey = "SpotifyAccessToken"
@@ -50,22 +51,37 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Connect to Spotify
     func connect() {
-        if !appRemote.isConnected {
-            appRemote.connect()
+        guard !appRemote.isConnected && !isConnecting else {
+            print("⚠️ Already connected or connecting - skipping connect()")
+            return
         }
+        
+        isConnecting = true
+        print("🔄 Initiating connection...")
+        appRemote.connect()
     }
     
     /// Handle app becoming active - reconnect if needed
     func handleAppBecameActive() {
         print("🔄 App became active - checking connection...")
         
+        // Don't try to connect if already connecting or connected
+        if isConnecting {
+            print("⚠️ Connection already in progress - skipping")
+            return
+        }
+        
+        if appRemote.isConnected {
+            print("✅ Already connected - no action needed")
+            return
+        }
+        
         // If we have a token but not connected, try to reconnect
-        if let token = connectionToken, !appRemote.isConnected {
+        if let token = connectionToken {
             print("🔄 Have token but not connected - reconnecting...")
             appRemote.connectionParameters.accessToken = token
+            isConnecting = true
             appRemote.connect()
-        } else if appRemote.isConnected {
-            print("✅ Already connected - no action needed")
         } else {
             print("❌ No token available - waiting for user login")
         }
@@ -80,9 +96,13 @@ class SpotifyManager: NSObject, ObservableObject {
         // Save token persistently
         saveToken(token)
         
-        // Connect (let Spotify SDK handle the connection naturally)
-        if !appRemote.isConnected {
+        // Connect only if not already connecting
+        if !appRemote.isConnected && !isConnecting {
+            isConnecting = true
+            print("🔄 Connecting with new token...")
             appRemote.connect()
+        } else {
+            print("⚠️ Already connected or connecting - not starting new connection")
         }
     }
     
@@ -177,6 +197,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
         print("✅ App Remote connected successfully")
         isConnected = true
+        isConnecting = false // Clear connecting flag
         isReconnecting = false // Clear reconnecting flag
         reconnectAttempts = 0 // Reset counter on successful connection
         
@@ -215,6 +236,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
         print("App Remote connection failed: \(error?.localizedDescription ?? "unknown error")")
         isConnected = false
+        isConnecting = false // Clear connecting flag on failure
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
@@ -224,11 +246,10 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("⚠️ Error details: \(String(describing: error))")
         print("⚠️ ========================================")
         isConnected = false
-        
-        // DON'T auto-reconnect - just let it disconnect and show login screen
-        // This will help us debug if pause() is causing the disconnection
+        isConnecting = false // Clear connecting flag
         isReconnecting = false
-        print("❌ Disconnected - NOT attempting reconnect (debugging mode)")
+        
+        print("❌ Disconnected - user must login again")
     }
     
     private func attemptReconnect() {
