@@ -14,7 +14,6 @@ class SpotifyManager: NSObject, ObservableObject {
     private let clientID = SpotifyConfig.clientID
     private let redirectURI = URL(string: SpotifyConfig.redirectURI)!
     private var connectionToken: String?
-    private var keepAliveTimer: Timer?
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 10 // Increased from 5 to 10
     private var reconnectTimeoutTimer: Timer?
@@ -195,40 +194,13 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         }
         
-        // Start lightweight keep-alive monitor
-        startKeepAliveTimer()
+        // NO KEEP-ALIVE TIMER - Let Spotify SDK manage connection naturally
+        // The SDK will call didDisconnectWithError if connection is lost
         
-        print("✓ Connection established and stable")
+        print("✓ Connection established and stable - relying on SDK for connection management")
     }
     
-    private func startKeepAliveTimer() {
-        // Stop existing timer if any
-        keepAliveTimer?.invalidate()
-        
-        // SIMPLIFIED: Just check connection health every 30 seconds (don't ping aggressively)
-        // The Spotify SDK maintains its own connection - we shouldn't interfere too much
-        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // Only check if connection is still alive, don't send unnecessary requests
-            if !self.appRemote.isConnected {
-                print("⚠️ Connection lost, attempting reconnect...")
-                if self.connectionToken != nil {
-                    self.isReconnecting = true
-                }
-                self.attemptReconnect()
-            } else {
-                print("✓ Connection still healthy")
-            }
-        }
-        
-        print("✓ Keep-alive monitor started (30 second check interval)")
-    }
-    
-    private func stopKeepAliveTimer() {
-        keepAliveTimer?.invalidate()
-        keepAliveTimer = nil
-    }
+
     
     func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
         print("App Remote connection failed: \(error?.localizedDescription ?? "unknown error")")
@@ -236,9 +208,8 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-        print("App Remote disconnected: \(error?.localizedDescription ?? "no error")")
+        print("⚠️ App Remote disconnected: \(error?.localizedDescription ?? "no error")")
         isConnected = false
-        stopKeepAliveTimer()
         
         // Set reconnecting flag if we have a token (so we don't show login screen)
         if connectionToken != nil {
