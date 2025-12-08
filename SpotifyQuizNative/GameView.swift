@@ -286,6 +286,32 @@ struct GameView: View {
                             .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
                         }
                     }
+                } else if viewModel.gameState == .waitingForReveal {
+                    Button(action: {
+                        viewModel.revealAfterTimeout()
+                    }) {
+                        HStack {
+                            Image(systemName: "eye.fill")
+                                .font(.system(size: 20, weight: .bold))
+                            Text("Reveal")
+                                .font(.system(size: 20, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(red: 1.0, green: 0.0, blue: 0.4),
+                                    Color(red: 1.0, green: 0.1, blue: 0.45)
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(28)
+                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
+                    }
                 } else if viewModel.gameState == .finished {
                     Button(action: {
                         viewModel.nextRound()
@@ -355,7 +381,7 @@ class GameViewModel: ObservableObject {
     }
     
     enum GameState {
-        case ready, playing, finished
+        case ready, playing, waitingForReveal, finished
     }
     
     func startRound() {
@@ -410,6 +436,13 @@ class GameViewModel: ObservableObject {
         }
     }
     
+    func revealAfterTimeout() {
+        gameState = .finished
+        showAnswer = true
+        // Time's up - award 1 point
+        score += 1
+    }
+    
     func nextRound() {
         round += 1
         gameState = .ready
@@ -429,10 +462,9 @@ class GameViewModel: ObservableObject {
             } else {
                 self.stopTimer()
                 self.spotifyManager?.pause()
-                self.gameState = .finished
-                self.showAnswer = true
-                // Time's up - award 1 point
-                self.score += 1
+                self.gameState = .waitingForReveal
+                // Don't show answer yet - wait for user to click Reveal
+                // Award 1 point when revealed
             }
         }
     }
