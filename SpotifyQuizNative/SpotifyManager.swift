@@ -244,9 +244,24 @@ extension SpotifyManager: SPTAppRemoteDelegate {
 
     
     func appRemote(_ appRemote: SPTAppRemote, didFailConnectionAttemptWithError error: Error?) {
-        print("App Remote connection failed: \(error?.localizedDescription ?? "unknown error")")
+        print("⚠️ App Remote connection failed: \(error?.localizedDescription ?? "unknown error")")
         isConnected = false
         isConnecting = false // Clear connecting flag on failure
+        
+        // If we were trying to reconnect and it failed, stop trying
+        if isReconnecting {
+            let nsError = error as NSError?
+            // Check if it's "Connection refused" (Spotify app not running)
+            if nsError?.code == -2000 {
+                print("⚠️ Spotify app not running - stopping reconnection attempts")
+                isReconnecting = false
+                reconnectAttempts = 0
+            } else if reconnectAttempts >= maxReconnectAttempts {
+                print("⚠️ Max reconnect attempts reached")
+                isReconnecting = false
+                reconnectAttempts = 0
+            }
+        }
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
@@ -261,24 +276,26 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         // Check if this is the "End of stream" error (Spotify app suspended)
         let nsError = error as NSError?
         if nsError?.domain == "com.spotify.app-remote" && nsError?.code == -1002 {
-            print("🔄 Spotify app was suspended - will auto-reconnect silently")
+            print("🔄 Spotify app was suspended - will try quick reconnect")
             
             // This is expected when Spotify app goes to background
-            // Try to reconnect automatically with saved token
+            // Try to reconnect automatically with saved token (3 attempts max)
             if let token = connectionToken {
                 isReconnecting = true
                 
-                // Set a timeout - if reconnection fails after 10 seconds, show login
+                // Set a shorter timeout - 5 seconds for 3 quick attempts
                 reconnectTimeoutTimer?.invalidate()
-                reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+                reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { [weak self] _ in
                     guard let self = self else { return }
                     if self.isReconnecting && !self.isConnected {
-                        print("⚠️ Reconnection timeout - showing login screen")
+                        print("❌ Quick reconnect failed - Spotify app needs to be opened")
+                        print("💡 Tip: Keep Spotify app running in background for best experience")
                         self.isReconnecting = false
+                        self.reconnectAttempts = 0
                     }
                 }
                 
-                // Attempt to reconnect
+                // Attempt quick reconnect
                 attemptReconnect()
             } else {
                 print("❌ No token available - user must login again")
@@ -298,16 +315,17 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             return
         }
         
-        guard reconnectAttempts < maxReconnectAttempts else {
-            print("⚠️ Max reconnect attempts reached. Giving up.")
+        guard reconnectAttempts < 3 else {
+            print("⚠️ Max reconnect attempts (3) reached. Spotify app needs to be opened manually.")
             isReconnecting = false
+            reconnectAttempts = 0
             return
         }
         
         reconnectAttempts += 1
-        print("🔄 Reconnect attempt \(reconnectAttempts)/\(maxReconnectAttempts)...")
+        print("🔄 Reconnect attempt \(reconnectAttempts)/3...")
         
-        // Wait briefly before reconnecting
+        // Try simple reconnect first (in case Spotify is still in memory)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
             
