@@ -239,51 +239,82 @@ struct GameView: View {
                         .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
                     }
                 } else if viewModel.gameState == .playing {
-                    HStack(spacing: 15) {
-                        Button(action: {
-                            viewModel.skipTrack()
-                        }) {
-                            HStack {
-                                Image(systemName: "forward.fill")
-                                    .font(.system(size: 16, weight: .bold))
-                                Text("Skip")
-                                    .font(.system(size: 16, weight: .semibold))
+                    VStack(spacing: 15) {
+                        // Show "Add 5 Seconds" button when ≤5 seconds
+                        if viewModel.timeRemaining <= 5 && viewModel.duration > 0 {
+                            Button(action: {
+                                viewModel.extendTime()
+                            }) {
+                                HStack {
+                                    Image(systemName: "clock.badge.plus.fill")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("Add 5 Seconds")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.orange,
+                                            Color(red: 1.0, green: 0.6, blue: 0.0)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(28)
+                                .shadow(color: Color.orange.opacity(0.4), radius: 15, x: 0, y: 5)
                             }
-                            .foregroundColor(.white.opacity(0.8))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color(red: 0.15, green: 0.18, blue: 0.25))
-                            .cornerRadius(28)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 28)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
                         }
                         
-                        Button(action: {
-                            viewModel.revealAnswer()
-                        }) {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 18, weight: .bold))
-                                Text("I Know It!")
-                                    .font(.system(size: 18, weight: .semibold))
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color(red: 1.0, green: 0.0, blue: 0.4),
-                                        Color(red: 1.0, green: 0.1, blue: 0.45)
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                        HStack(spacing: 15) {
+                            Button(action: {
+                                viewModel.skipTrack()
+                            }) {
+                                HStack {
+                                    Image(systemName: "forward.fill")
+                                        .font(.system(size: 16, weight: .bold))
+                                    Text("Skip")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .foregroundColor(.white.opacity(0.8))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color(red: 0.15, green: 0.18, blue: 0.25))
+                                .cornerRadius(28)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 28)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                 )
-                            )
-                            .cornerRadius(28)
-                            .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
+                            }
+                            
+                            Button(action: {
+                                viewModel.revealAnswer()
+                            }) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("I Know It!")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(red: 1.0, green: 0.0, blue: 0.4),
+                                            Color(red: 1.0, green: 0.1, blue: 0.45)
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(28)
+                                .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3), radius: 15, x: 0, y: 5)
+                            }
                         }
                     }
                 } else if viewModel.gameState == .waitingForReveal {
@@ -434,6 +465,12 @@ class GameViewModel: ObservableObject {
             // Full Song mode - fixed points
             score += 2
         }
+    }
+    
+    func extendTime() {
+        // Add 5 seconds to the timer
+        timeRemaining += 5
+        print("Extended time by 5 seconds. New time: \(timeRemaining)")
     }
     
     func revealAfterTimeout() {
