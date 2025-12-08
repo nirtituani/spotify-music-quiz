@@ -240,7 +240,7 @@ struct GameView: View {
                     }
                 } else if viewModel.gameState == .playing {
                     VStack(spacing: 15) {
-                        // Show "Add 5 Seconds" button when ≤5 seconds
+                        // Show "Add 30 Seconds" button when ≤5 seconds
                         if viewModel.timeRemaining <= 5 && viewModel.duration > 0 {
                             Button(action: {
                                 viewModel.extendTime()
@@ -248,7 +248,7 @@ struct GameView: View {
                                 HStack {
                                     Image(systemName: "clock.badge.plus.fill")
                                         .font(.system(size: 18, weight: .bold))
-                                    Text("Add 5 Seconds")
+                                    Text("Add 30 Seconds")
                                         .font(.system(size: 18, weight: .semibold))
                                 }
                                 .foregroundColor(.white)
@@ -468,9 +468,9 @@ class GameViewModel: ObservableObject {
     }
     
     func extendTime() {
-        // Add 5 seconds to the timer
-        timeRemaining += 5
-        print("Extended time by 5 seconds. New time: \(timeRemaining)")
+        // Add 30 seconds to the timer
+        timeRemaining += 30
+        print("Extended time by 30 seconds. New time: \(timeRemaining)")
     }
     
     func revealAfterTimeout() {
