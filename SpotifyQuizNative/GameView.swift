@@ -95,12 +95,12 @@ struct GameView: View {
             // Timer (only show if not Full Song mode)
             if viewModel.gameState == .playing && viewModel.duration > 0 {
                 ZStack {
-                    // Outer glow
+                    // Outer glow - changes to red when ≤5 seconds
                     Circle()
                         .fill(
                             RadialGradient(
                                 gradient: Gradient(colors: [
-                                    Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.3),
+                                    (viewModel.timeRemaining <= 5 ? Color.red : Color(red: 1.0, green: 0.0, blue: 0.4)).opacity(0.4),
                                     Color.clear
                                 ]),
                                 center: .center,
@@ -110,19 +110,24 @@ struct GameView: View {
                         )
                         .frame(width: 200, height: 200)
                         .blur(radius: 20)
+                        .scaleEffect(viewModel.timeRemaining <= 5 ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: viewModel.timeRemaining <= 5)
                     
                     // Background circle
                     Circle()
                         .stroke(lineWidth: 12)
                         .opacity(0.2)
-                        .foregroundColor(Color(red: 1.0, green: 0.0, blue: 0.4))
+                        .foregroundColor(viewModel.timeRemaining <= 5 ? Color.red : Color(red: 1.0, green: 0.0, blue: 0.4))
                     
-                    // Progress circle
+                    // Progress circle - turns red when ≤5 seconds
                     Circle()
                         .trim(from: 0.0, to: CGFloat(viewModel.timeRemaining) / CGFloat(viewModel.duration))
                         .stroke(
                             LinearGradient(
-                                gradient: Gradient(colors: [
+                                gradient: Gradient(colors: viewModel.timeRemaining <= 5 ? [
+                                    Color.red,
+                                    Color(red: 1.0, green: 0.3, blue: 0.3)
+                                ] : [
                                     Color(red: 1.0, green: 0.0, blue: 0.4),
                                     Color(red: 1.0, green: 0.1, blue: 0.45)
                                 ]),
@@ -133,14 +138,18 @@ struct GameView: View {
                         )
                         .rotationEffect(Angle(degrees: 270.0))
                         .animation(.linear(duration: 1.0), value: viewModel.timeRemaining)
-                        .shadow(color: Color(red: 1.0, green: 0.0, blue: 0.4).opacity(0.5), radius: 10, x: 0, y: 0)
+                        .shadow(color: (viewModel.timeRemaining <= 5 ? Color.red : Color(red: 1.0, green: 0.0, blue: 0.4)).opacity(0.5), radius: 10, x: 0, y: 0)
                     
+                    // Timer text - larger and red when ≤5 seconds
                     Text("\(viewModel.timeRemaining)")
-                        .font(.system(size: 64, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: viewModel.timeRemaining <= 5 ? 72 : 64, weight: .bold))
+                        .foregroundColor(viewModel.timeRemaining <= 5 ? Color.red : .white)
+                        .animation(.easeInOut(duration: 0.3), value: viewModel.timeRemaining)
                 }
                 .frame(width: 160, height: 160)
                 .padding()
+                .scaleEffect(viewModel.timeRemaining <= 5 ? 1.05 : 1.0)
+                .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: viewModel.timeRemaining <= 5)
             } else if viewModel.gameState == .playing && viewModel.duration == 0 {
                 // Full Song mode - show playing indicator
                 VStack(spacing: 15) {
