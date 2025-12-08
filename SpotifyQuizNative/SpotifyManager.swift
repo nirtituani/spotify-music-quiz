@@ -194,19 +194,20 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // Pause music but with a longer delay to ensure connection is fully stable
-        // Use 3 seconds to be extra safe
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+        // Wait 5 seconds before pausing to let the connection fully stabilize
+        // The SDK needs time to establish a solid connection before we interact with it
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            print("🔇 Pausing any auto-play music (after 5s stabilization)...")
             appRemote.playerAPI?.pause({ pauseResult, pauseError in
                 if pauseError == nil {
-                    print("✓ Paused OAuth auto-play (after 3s delay)")
+                    print("✓ Successfully paused playback")
                 } else {
-                    print("Note: Pause error: \(pauseError?.localizedDescription ?? "")")
+                    print("Note: Pause returned error: \(pauseError?.localizedDescription ?? "")")
                 }
             })
         }
         
-        print("✓ Connection established - will pause auto-play in 3 seconds")
+        print("✓ Connection established - will pause in 5 seconds")
     }
     
 
@@ -224,26 +225,10 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("⚠️ ========================================")
         isConnected = false
         
-        // Try to reconnect silently if we have a token
-        if connectionToken != nil {
-            isReconnecting = true
-            print("🔄 Will attempt reconnection...")
-            
-            // Set a timeout
-            reconnectTimeoutTimer?.invalidate()
-            reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
-                guard let self = self else { return }
-                if self.isReconnecting && !self.isConnected {
-                    print("⚠️ Reconnection timeout - showing login")
-                    self.isReconnecting = false
-                }
-            }
-            
-            // Try reconnecting
-            attemptReconnect()
-        } else {
-            print("❌ No token available - cannot reconnect")
-        }
+        // DON'T auto-reconnect - just let it disconnect and show login screen
+        // This will help us debug if pause() is causing the disconnection
+        isReconnecting = false
+        print("❌ Disconnected - NOT attempting reconnect (debugging mode)")
     }
     
     private func attemptReconnect() {
