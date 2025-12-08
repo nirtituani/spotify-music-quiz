@@ -8,6 +8,7 @@ class SpotifyManager: NSObject, ObservableObject {
     @Published var isConnected = false
     @Published var currentTrackName: String?
     @Published var isPlaying = false
+    @Published var isReconnecting = false // Track if we're attempting to reconnect
     
     // MARK: - Private Properties
     private let clientID = SpotifyConfig.clientID
@@ -169,6 +170,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
         print("App Remote connected")
         isConnected = true
+        isReconnecting = false // Clear reconnecting flag
         reconnectAttempts = 0 // Reset counter on successful connection
         
         // IMMEDIATELY pause any playback - do this first before anything else
@@ -253,6 +255,12 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         isConnected = false
         stopKeepAliveTimer()
         
+        // Set reconnecting flag if we have a token (so we don't show login screen)
+        if connectionToken != nil {
+            isReconnecting = true
+            print("🔄 Starting reconnection process...")
+        }
+        
         // Auto-reconnect immediately
         attemptReconnect()
     }
@@ -260,19 +268,21 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     private func attemptReconnect() {
         guard let token = connectionToken else {
             print("Cannot reconnect: No token available")
+            isReconnecting = false
             return
         }
         
         guard reconnectAttempts < maxReconnectAttempts else {
-            print("Max reconnect attempts reached. Please restart app.")
+            print("⚠️ Max reconnect attempts reached. Giving up.")
+            isReconnecting = false
             return
         }
         
         reconnectAttempts += 1
-        print("Reconnect attempt \(reconnectAttempts)/\(maxReconnectAttempts)...")
+        print("🔄 Reconnect attempt \(reconnectAttempts)/\(maxReconnectAttempts)...")
         
         // Wait briefly before reconnecting
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
             
             if !self.appRemote.isConnected {
