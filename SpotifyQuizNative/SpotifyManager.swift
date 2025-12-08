@@ -226,19 +226,11 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // Wait 2 seconds before pausing - enough time for connection to stabilize
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            print("🔇 Pausing auto-play music...")
-            appRemote.playerAPI?.pause({ pauseResult, pauseError in
-                if pauseError == nil {
-                    print("✓ Successfully paused playback")
-                } else {
-                    print("Note: Pause returned error: \(pauseError?.localizedDescription ?? "")")
-                }
-            })
-        }
+        // DON'T pause! Keep Spotify active by keeping something playing
+        // This prevents iOS from suspending Spotify app
+        // The game will start playing quiz tracks immediately anyway
         
-        print("✓ Connection established - will pause in 2 seconds")
+        print("✓ Connection established - keeping Spotify active (not pausing)")
     }
     
 
