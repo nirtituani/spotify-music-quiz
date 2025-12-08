@@ -4,6 +4,7 @@ import SpotifyiOS
 @main
 struct SpotifyQuizNativeApp: App {
     @StateObject private var spotifyManager = SpotifyManager.shared
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some Scene {
         WindowGroup {
@@ -15,6 +16,9 @@ struct SpotifyQuizNativeApp: App {
                     }
             }
             .navigationViewStyle(StackNavigationViewStyle())
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            handleScenePhaseChange(oldPhase: oldPhase, newPhase: newPhase)
         }
     }
     
@@ -38,6 +42,30 @@ struct SpotifyQuizNativeApp: App {
             APIManager.shared.setAccessToken(accessToken)
             // Set token for Spotify App Remote connection
             spotifyManager.setConnectionToken(accessToken)
+        }
+    }
+    
+    private func handleScenePhaseChange(oldPhase: ScenePhase, newPhase: ScenePhase) {
+        print("🔄 App scene phase changed: \(oldPhase) -> \(newPhase)")
+        
+        switch newPhase {
+        case .active:
+            print("✅ App became active")
+            // Try to reconnect if we were disconnected while in background
+            spotifyManager.handleAppBecameActive()
+            
+        case .inactive:
+            print("⏸️ App became inactive")
+            // App is transitioning (e.g., opening Spotify for auth)
+            // Don't disconnect - maintain connection
+            
+        case .background:
+            print("📱 App went to background")
+            // App is in background - SDK will disconnect after some time
+            // This is normal behavior
+            
+        @unknown default:
+            print("❓ Unknown scene phase")
         }
     }
 }

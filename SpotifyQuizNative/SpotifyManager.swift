@@ -55,6 +55,22 @@ class SpotifyManager: NSObject, ObservableObject {
         }
     }
     
+    /// Handle app becoming active - reconnect if needed
+    func handleAppBecameActive() {
+        print("🔄 App became active - checking connection...")
+        
+        // If we have a token but not connected, try to reconnect
+        if let token = connectionToken, !appRemote.isConnected {
+            print("🔄 Have token but not connected - reconnecting...")
+            appRemote.connectionParameters.accessToken = token
+            appRemote.connect()
+        } else if appRemote.isConnected {
+            print("✅ Already connected - no action needed")
+        } else {
+            print("❌ No token available - waiting for user login")
+        }
+    }
+    
     /// Set the connection token from OAuth callback
     func setConnectionToken(_ token: String) {
         self.connectionToken = token
@@ -178,10 +194,19 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // DON'T pause - let music play if it wants to!
-        // This might be what's causing the disconnection
+        // Pause music but with a longer delay to ensure connection is fully stable
+        // Use 3 seconds to be extra safe
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            appRemote.playerAPI?.pause({ pauseResult, pauseError in
+                if pauseError == nil {
+                    print("✓ Paused OAuth auto-play (after 3s delay)")
+                } else {
+                    print("Note: Pause error: \(pauseError?.localizedDescription ?? "")")
+                }
+            })
+        }
         
-        print("✓ Connection established and stable - NO interference at all")
+        print("✓ Connection established - will pause auto-play in 3 seconds")
     }
     
 
