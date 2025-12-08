@@ -16,7 +16,8 @@ class SpotifyManager: NSObject, ObservableObject {
     private var connectionToken: String?
     private var keepAliveTimer: Timer?
     private var reconnectAttempts = 0
-    private let maxReconnectAttempts = 5
+    private let maxReconnectAttempts = 10 // Increased from 5 to 10
+    private var reconnectTimeoutTimer: Timer?
     
     // Token storage keys
     private let tokenKey = "SpotifyAccessToken"
@@ -168,10 +169,14 @@ class SpotifyManager: NSObject, ObservableObject {
 // MARK: - SPTAppRemoteDelegate
 extension SpotifyManager: SPTAppRemoteDelegate {
     func appRemoteDidEstablishConnection(_ appRemote: SPTAppRemote) {
-        print("App Remote connected")
+        print("✅ App Remote connected successfully")
         isConnected = true
         isReconnecting = false // Clear reconnecting flag
         reconnectAttempts = 0 // Reset counter on successful connection
+        
+        // Cancel timeout timer
+        reconnectTimeoutTimer?.invalidate()
+        reconnectTimeoutTimer = nil
         
         // IMMEDIATELY pause any playback - do this first before anything else
         appRemote.playerAPI?.pause({ result, error in
@@ -209,13 +214,16 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         // Stop existing timer if any
         keepAliveTimer?.invalidate()
         
-        // Aggressive keep-alive: Ping every 5 seconds to prevent any timeout
-        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+        // Ultra-aggressive keep-alive: Ping every 3 seconds to maintain rock-solid connection
+        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
             // Check if we're still connected
             if !self.appRemote.isConnected {
                 print("⚠️ Keep-alive: Connection lost, attempting reconnect...")
+                if self.connectionToken != nil {
+                    self.isReconnecting = true
+                }
                 self.attemptReconnect()
                 return
             }
@@ -223,21 +231,23 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             // Ping player state to maintain connection (prevents SDK timeout)
             self.appRemote.playerAPI?.getPlayerState { result, error in
                 if error == nil {
-                    print("✓ Keep-alive: Connection healthy (5s ping)")
+                    print("✓ Keep-alive: Connection healthy (3s ping)")
                     self.reconnectAttempts = 0 // Reset counter on success
                 } else {
                     print("⚠️ Keep-alive: Connection check failed - \(error?.localizedDescription ?? "unknown")")
-                    // Don't reconnect on single failure, wait for next check
+                    // Don't immediately reconnect on single failure, wait for next check
                 }
             }
             
-            // Additional: Subscribe to player state to keep SDK active
+            // Additional: Keep subscription active
             self.appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
                 if let error = error {
                     print("Keep-alive: Subscription refresh - \(error.localizedDescription)")
                 }
             })
         }
+        
+        print("✓ Keep-alive timer started (3 second interval)")
     }
     
     private func stopKeepAliveTimer() {
@@ -259,6 +269,16 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         if connectionToken != nil {
             isReconnecting = true
             print("🔄 Starting reconnection process...")
+            
+            // Set a timeout - if we can't reconnect in 15 seconds, give up and show login
+            reconnectTimeoutTimer?.invalidate()
+            reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                if self.isReconnecting && !self.isConnected {
+                    print("⚠️ Reconnection timeout - giving up after 15 seconds")
+                    self.isReconnecting = false
+                }
+            }
         }
         
         // Auto-reconnect immediately
