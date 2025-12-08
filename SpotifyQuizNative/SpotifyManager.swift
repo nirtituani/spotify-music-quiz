@@ -178,26 +178,10 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // IMPORTANT: Pause ONCE on initial connection (Spotify OAuth starts playing automatically)
-        // But do it gently with a delay to not interfere with the connection establishment
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            // Check if user hasn't already started playing something
-            appRemote.playerAPI?.getPlayerState { result, error in
-                if let playerState = result as? SPTAppRemotePlayerState, !playerState.isPaused {
-                    // Only pause if something is actually playing (from OAuth auto-play)
-                    appRemote.playerAPI?.pause({ pauseResult, pauseError in
-                        if pauseError == nil {
-                            print("✓ Paused OAuth auto-play")
-                        }
-                    })
-                }
-            }
-        }
+        // DON'T pause - let music play if it wants to!
+        // This might be what's causing the disconnection
         
-        // NO KEEP-ALIVE TIMER - Let Spotify SDK manage connection naturally
-        // The SDK will call didDisconnectWithError if connection is lost
-        
-        print("✓ Connection established and stable - relying on SDK for connection management")
+        print("✓ Connection established and stable - NO interference at all")
     }
     
 
@@ -208,27 +192,33 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     }
     
     func appRemote(_ appRemote: SPTAppRemote, didDisconnectWithError error: Error?) {
-        print("⚠️ App Remote disconnected: \(error?.localizedDescription ?? "no error")")
+        print("⚠️ ========================================")
+        print("⚠️ App Remote disconnected!")
+        print("⚠️ Error: \(error?.localizedDescription ?? "no error")")
+        print("⚠️ Error details: \(String(describing: error))")
+        print("⚠️ ========================================")
         isConnected = false
         
-        // Set reconnecting flag if we have a token (so we don't show login screen)
+        // Try to reconnect silently if we have a token
         if connectionToken != nil {
             isReconnecting = true
-            print("🔄 Starting reconnection process...")
+            print("🔄 Will attempt reconnection...")
             
-            // Set a timeout - if we can't reconnect in 15 seconds, give up and show login
+            // Set a timeout
             reconnectTimeoutTimer?.invalidate()
-            reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak self] _ in
+            reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
                 guard let self = self else { return }
                 if self.isReconnecting && !self.isConnected {
-                    print("⚠️ Reconnection timeout - giving up after 15 seconds")
+                    print("⚠️ Reconnection timeout - showing login")
                     self.isReconnecting = false
                 }
             }
+            
+            // Try reconnecting
+            attemptReconnect()
+        } else {
+            print("❌ No token available - cannot reconnect")
         }
-        
-        // Auto-reconnect immediately
-        attemptReconnect()
     }
     
     private func attemptReconnect() {
