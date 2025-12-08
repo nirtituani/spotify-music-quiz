@@ -226,10 +226,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // Wait 5 seconds before pausing to let the connection fully stabilize
-        // The SDK needs time to establish a solid connection before we interact with it
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
-            print("🔇 Pausing any auto-play music (after 5s stabilization)...")
+        // Wait 2 seconds before pausing - enough time for connection to stabilize
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            print("🔇 Pausing auto-play music...")
             appRemote.playerAPI?.pause({ pauseResult, pauseError in
                 if pauseError == nil {
                     print("✓ Successfully paused playback")
@@ -239,7 +238,7 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             })
         }
         
-        print("✓ Connection established - will pause in 5 seconds")
+        print("✓ Connection established - will pause in 2 seconds")
     }
     
 
