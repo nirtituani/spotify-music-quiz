@@ -43,8 +43,8 @@ class SpotifyManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
-        // Try to restore saved token on init
-        restoreToken()
+        // DON'T auto-restore token on init - wait for user action or app becoming active
+        print("SpotifyManager initialized")
     }
     
     // MARK: - Public Methods
@@ -74,6 +74,17 @@ class SpotifyManager: NSObject, ObservableObject {
         if appRemote.isConnected {
             print("✅ Already connected - no action needed")
             return
+        }
+        
+        // Try to restore saved token if we don't have one in memory
+        if connectionToken == nil {
+            if let savedToken = UserDefaults.standard.string(forKey: tokenKey),
+               let expirationDate = UserDefaults.standard.object(forKey: tokenExpirationKey) as? Date,
+               Date() < expirationDate {
+                print("✓ Restoring saved token from UserDefaults")
+                connectionToken = savedToken
+                appRemote.connectionParameters.accessToken = savedToken
+            }
         }
         
         // If we have a token but not connected, try to reconnect
