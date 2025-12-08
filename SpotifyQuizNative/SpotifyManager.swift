@@ -257,9 +257,38 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("⚠️ ========================================")
         isConnected = false
         isConnecting = false // Clear connecting flag
-        isReconnecting = false
         
-        print("❌ Disconnected - user must login again")
+        // Check if this is the "End of stream" error (Spotify app suspended)
+        let nsError = error as NSError?
+        if nsError?.domain == "com.spotify.app-remote" && nsError?.code == -1002 {
+            print("🔄 Spotify app was suspended - will auto-reconnect silently")
+            
+            // This is expected when Spotify app goes to background
+            // Try to reconnect automatically with saved token
+            if let token = connectionToken {
+                isReconnecting = true
+                
+                // Set a timeout - if reconnection fails after 10 seconds, show login
+                reconnectTimeoutTimer?.invalidate()
+                reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+                    guard let self = self else { return }
+                    if self.isReconnecting && !self.isConnected {
+                        print("⚠️ Reconnection timeout - showing login screen")
+                        self.isReconnecting = false
+                    }
+                }
+                
+                // Attempt to reconnect
+                attemptReconnect()
+            } else {
+                print("❌ No token available - user must login again")
+                isReconnecting = false
+            }
+        } else {
+            // Some other error - don't auto-reconnect
+            print("❌ Unexpected disconnect - user must login again")
+            isReconnecting = false
+        }
     }
     
     private func attemptReconnect() {
@@ -282,8 +311,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
             
-            if !self.appRemote.isConnected {
+            if !self.appRemote.isConnected && !self.isConnecting {
                 self.appRemote.connectionParameters.accessToken = token
+                self.isConnecting = true
                 self.appRemote.connect()
             }
         }
