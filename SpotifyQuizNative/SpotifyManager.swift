@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 import SpotifyiOS
 import Combine
+import AVFoundation
 
 class SpotifyManager: NSObject, ObservableObject {
     // MARK: - Published Properties
@@ -18,6 +19,7 @@ class SpotifyManager: NSObject, ObservableObject {
     private let maxReconnectAttempts = 10 // Increased from 5 to 10
     private var reconnectTimeoutTimer: Timer?
     private var isConnecting = false // Track if connection is in progress
+    private var connectionKeepAliveTimer: Timer?
     
     // Token storage keys
     private let tokenKey = "SpotifyAccessToken"
@@ -45,6 +47,48 @@ class SpotifyManager: NSObject, ObservableObject {
         super.init()
         // DON'T auto-restore token on init - wait for user action or app becoming active
         print("SpotifyManager initialized")
+        
+        // Configure audio session to keep connection alive
+        configureAudioSession()
+    }
+    
+    private func configureAudioSession() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            // Set category to playback with options to allow background and mix with others
+            try audioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers, .allowBluetooth, .allowBluetoothA2DP])
+            try audioSession.setActive(true)
+            print("✓ Audio session configured for background playback")
+        } catch {
+            print("⚠️ Failed to configure audio session: \(error)")
+        }
+    }
+    
+    private func startConnectionKeepAlive() {
+        // Stop any existing timer
+        connectionKeepAliveTimer?.invalidate()
+        
+        // Keep connection alive by periodically refreshing subscription
+        // This maintains an active channel with Spotify app
+        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: true) { [weak self] _ in
+            guard let self = self, self.appRemote.isConnected else { return }
+            
+            // Just refresh the subscription - this is very lightweight
+            // but keeps the connection channel active
+            self.appRemote.playerAPI?.subscribe(toPlayerState: { _, _ in
+                // Silent refresh - no action needed
+            })
+            
+            print("🔄 Connection keep-alive ping (15s)")
+        }
+        
+        print("✓ Connection keep-alive timer started (15s interval)")
+    }
+    
+    private func stopConnectionKeepAlive() {
+        connectionKeepAliveTimer?.invalidate()
+        connectionKeepAliveTimer = nil
+        print("🛑 Connection keep-alive timer stopped")
     }
     
     // MARK: - Public Methods
@@ -226,11 +270,11 @@ extension SpotifyManager: SPTAppRemoteDelegate {
             }
         })
         
-        // DON'T pause! Keep Spotify active by keeping something playing
-        // This prevents iOS from suspending Spotify app
-        // The game will start playing quiz tracks immediately anyway
+        // Start connection keep-alive timer
+        // This periodically refreshes the subscription to maintain active connection
+        startConnectionKeepAlive()
         
-        print("✓ Connection established - keeping Spotify active (not pausing)")
+        print("✓ Connection established - keep-alive active")
     }
     
 
@@ -264,6 +308,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         print("⚠️ ========================================")
         isConnected = false
         isConnecting = false // Clear connecting flag
+        
+        // Stop keep-alive timer
+        stopConnectionKeepAlive()
         
         // Check if this is the "End of stream" error (Spotify app suspended)
         let nsError = error as NSError?
