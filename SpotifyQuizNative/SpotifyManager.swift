@@ -318,7 +318,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
     private func clearToken() {
         UserDefaults.standard.removeObject(forKey: tokenKey)
         UserDefaults.standard.removeObject(forKey: tokenExpirationKey)
+        UserDefaults.standard.removeObject(forKey: "hasEverConnected") // Clear connection flag too
         connectionToken = nil
+        print("✓ Token and connection status cleared")
     }
 }
 
