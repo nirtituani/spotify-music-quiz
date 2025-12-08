@@ -65,18 +65,9 @@ class SpotifyManager: NSObject, ObservableObject {
         // Save token persistently
         saveToken(token)
         
-        // Connect and immediately pause to prevent auto-play
+        // Connect (let Spotify SDK handle the connection naturally)
         if !appRemote.isConnected {
             appRemote.connect()
-            
-            // Pause after a very short delay (as soon as connected)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                self?.appRemote.playerAPI?.pause({ result, error in
-                    if error == nil {
-                        print("Paused auto-play on connection")
-                    }
-                })
-            }
         }
     }
     
@@ -178,76 +169,44 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         reconnectTimeoutTimer?.invalidate()
         reconnectTimeoutTimer = nil
         
-        // IMMEDIATELY pause any playback - do this first before anything else
-        appRemote.playerAPI?.pause({ result, error in
-            if let error = error {
-                print("Note: Could not pause playback: \(error.localizedDescription)")
-            } else {
-                print("✓ Paused playback on connection")
-            }
-        })
-        
-        // Also try to get player state and pause if playing
-        appRemote.playerAPI?.getPlayerState { [weak self] result, error in
-            if let playerState = result as? SPTAppRemotePlayerState, !playerState.isPaused {
-                appRemote.playerAPI?.pause(nil)
-                print("✓ Force paused active playback")
-            }
-        }
-        
-        // Subscribe to player state
+        // Subscribe to player state updates (but don't pause - let user control playback)
         appRemote.playerAPI?.delegate = self
         appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
             if let error = error {
                 print("Error subscribing to player state: \(error.localizedDescription)")
+            } else {
+                print("✓ Subscribed to player state updates")
             }
         })
         
-        // Start keep-alive timer to prevent disconnection
+        // Start lightweight keep-alive monitor
         startKeepAliveTimer()
         
-        // Update UI state
-        isPlaying = false
+        print("✓ Connection established and stable")
     }
     
     private func startKeepAliveTimer() {
         // Stop existing timer if any
         keepAliveTimer?.invalidate()
         
-        // Ultra-aggressive keep-alive: Ping every 3 seconds to maintain rock-solid connection
-        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+        // SIMPLIFIED: Just check connection health every 30 seconds (don't ping aggressively)
+        // The Spotify SDK maintains its own connection - we shouldn't interfere too much
+        keepAliveTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             
-            // Check if we're still connected
+            // Only check if connection is still alive, don't send unnecessary requests
             if !self.appRemote.isConnected {
-                print("⚠️ Keep-alive: Connection lost, attempting reconnect...")
+                print("⚠️ Connection lost, attempting reconnect...")
                 if self.connectionToken != nil {
                     self.isReconnecting = true
                 }
                 self.attemptReconnect()
-                return
+            } else {
+                print("✓ Connection still healthy")
             }
-            
-            // Ping player state to maintain connection (prevents SDK timeout)
-            self.appRemote.playerAPI?.getPlayerState { result, error in
-                if error == nil {
-                    print("✓ Keep-alive: Connection healthy (3s ping)")
-                    self.reconnectAttempts = 0 // Reset counter on success
-                } else {
-                    print("⚠️ Keep-alive: Connection check failed - \(error?.localizedDescription ?? "unknown")")
-                    // Don't immediately reconnect on single failure, wait for next check
-                }
-            }
-            
-            // Additional: Keep subscription active
-            self.appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
-                if let error = error {
-                    print("Keep-alive: Subscription refresh - \(error.localizedDescription)")
-                }
-            })
         }
         
-        print("✓ Keep-alive timer started (3 second interval)")
+        print("✓ Keep-alive monitor started (30 second check interval)")
     }
     
     private func stopKeepAliveTimer() {
