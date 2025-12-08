@@ -3,6 +3,7 @@ import SwiftUI
 struct MainContainerView: View {
     @EnvironmentObject var spotifyManager: SpotifyManager
     @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+    @AppStorage("hasEverConnected") private var hasEverConnected = false
     @State private var showWelcome = true
     @State private var showConnectionScreen = false
     
@@ -32,8 +33,8 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen whenever not connected (and welcome is done)
-            if !spotifyManager.isConnected && (hasSeenWelcome || !showWelcome) {
+            // Show connection screen only if never connected before (and welcome is done)
+            if !spotifyManager.isConnected && !hasEverConnected && (hasSeenWelcome || !showWelcome) {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
@@ -47,6 +48,13 @@ struct MainContainerView: View {
             // Check if first time user
             if !hasSeenWelcome {
                 showWelcome = true
+            }
+        }
+        .onChange(of: spotifyManager.isConnected) { oldValue, newValue in
+            // Mark as connected once user successfully connects
+            if newValue {
+                hasEverConnected = true
+                print("✓ User has successfully connected to Spotify")
             }
         }
     }
