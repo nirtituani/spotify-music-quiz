@@ -9,13 +9,13 @@ struct MainContainerView: View {
     
     var body: some View {
         ZStack {
-            // Main content - show GameModeView when connected OR if user has connected before
-            if spotifyManager.isConnected || hasEverConnected {
+            // Main content - show GameModeView ONLY when actually connected
+            if spotifyManager.isConnected {
                 GameModeView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
             } else {
-                // Show a placeholder while not connected (only for first time users)
+                // Show dark blue background when not connected
                 Color(red: 0.118, green: 0.141, blue: 0.200)
                     .ignoresSafeArea()
             }
@@ -33,8 +33,8 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen only if never connected before (and welcome is done)
-            if !spotifyManager.isConnected && !hasEverConnected && (hasSeenWelcome || !showWelcome) {
+            // Show connection screen when not connected (after welcome is done)
+            if !spotifyManager.isConnected && (hasSeenWelcome || !showWelcome) {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
