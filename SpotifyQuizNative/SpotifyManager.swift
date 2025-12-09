@@ -65,40 +65,10 @@ class SpotifyManager: NSObject, ObservableObject {
     }
     
     private func startConnectionKeepAlive() {
-        // Stop any existing timer
-        connectionKeepAliveTimer?.invalidate()
-        
-        // WORKAROUND for Spotify App Remote SDK limitation:
-        // The SDK disconnects after 30 seconds of no playback
-        // Solution: Resume playback briefly every 25 seconds
-        // Source: https://community.spotify.com/t5/Spotify-for-Developers/iOS-amp-Android-Remote-SDK-loses-connection-after-paused-for-30s/td-p/7077461
-        
-        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 25.0, repeats: true) { [weak self] _ in
-            guard let self = self, self.appRemote.isConnected else { return }
-            
-            // Check if music is currently paused
-            self.appRemote.playerAPI?.getPlayerState { result, error in
-                if let playerState = result as? SPTAppRemotePlayerState {
-                    if playerState.isPaused {
-                        print("🔄 Keep-alive: Music paused, doing brief resume/pause to prevent disconnect")
-                        
-                        // Resume for a tiny moment
-                        self.appRemote.playerAPI?.resume({ _, _ in
-                            // Immediately pause again after 100ms
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                self.appRemote.playerAPI?.pause({ _, _ in
-                                    print("✓ Keep-alive: Brief resume/pause cycle complete")
-                                })
-                            }
-                        })
-                    } else {
-                        print("🔄 Keep-alive: Music playing, no action needed")
-                    }
-                }
-            }
-        }
-        
-        print("✓ Connection keep-alive timer started (25s interval - prevents 30s disconnect)")
+        // NO KEEP-ALIVE NEEDED!
+        // We accept the 30s disconnect and reconnect on-demand when playing next track
+        // This is the smart approach - no annoying background activity
+        print("✓ Connection established - will reconnect on-demand if needed")
     }
     
     private func stopConnectionKeepAlive() {
@@ -203,18 +173,68 @@ class SpotifyManager: NSObject, ObservableObject {
     }
     
     /// Play a track by Spotify URI
-    func playTrack(uri: String) {
-        guard appRemote.isConnected else {
-            print("App Remote not connected")
+    func playTrack(uri: String, completion: ((Bool) -> Void)? = nil) {
+        // If not connected, reconnect first
+        if !appRemote.isConnected {
+            print("🔄 Not connected - reconnecting before playing track...")
+            
+            guard let token = connectionToken else {
+                print("❌ No token available - cannot play track")
+                completion?(false)
+                return
+            }
+            
+            // Reconnect and then play
+            appRemote.connectionParameters.accessToken = token
+            isConnecting = true
+            
+            // Wait for connection to establish
+            var connectionObserver: NSObjectProtocol?
+            connectionObserver = NotificationCenter.default.addObserver(
+                forName: NSNotification.Name("SpotifyConnected"),
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                // Remove observer
+                if let observer = connectionObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+                
+                // Now play the track
+                self?.playTrackAfterConnection(uri: uri, completion: completion)
+            }
+            
+            // Try to connect
+            appRemote.connect()
+            
+            // Set timeout
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+                if let observer = connectionObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+                
+                if self?.appRemote.isConnected == false {
+                    print("⚠️ Reconnection timeout")
+                    completion?(false)
+                }
+            }
+            
             return
         }
         
+        // Already connected, play directly
+        playTrackAfterConnection(uri: uri, completion: completion)
+    }
+    
+    private func playTrackAfterConnection(uri: String, completion: ((Bool) -> Void)?) {
         appRemote.playerAPI?.play(uri, callback: { [weak self] result, error in
             if let error = error {
                 print("Error playing track: \(error.localizedDescription)")
+                completion?(false)
             } else {
-                print("Successfully started playing: \(uri)")
+                print("✅ Successfully started playing: \(uri)")
                 self?.isPlaying = true
+                completion?(true)
             }
         })
     }
@@ -280,6 +300,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         UIApplication.shared.isIdleTimerDisabled = true
         print("✓ Screen sleep disabled to keep Spotify active")
         
+        // Notify that connection is ready (for playTrack waiting)
+        NotificationCenter.default.post(name: NSNotification.Name("SpotifyConnected"), object: nil)
+        
         // Subscribe to player state updates
         appRemote.playerAPI?.delegate = self
         appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
@@ -335,39 +358,11 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         // Re-enable screen sleep
         UIApplication.shared.isIdleTimerDisabled = false
         
-        // Check if this is the "End of stream" error (Spotify app suspended)
-        let nsError = error as NSError?
-        if nsError?.domain == "com.spotify.app-remote" && nsError?.code == -1002 {
-            print("🔄 Spotify app was suspended - will try quick reconnect")
-            
-            // This is expected when Spotify app goes to background
-            // Try to reconnect automatically with saved token (3 attempts max)
-            if let token = connectionToken {
-                isReconnecting = true
-                
-                // Set a shorter timeout - 5 seconds for 3 quick attempts
-                reconnectTimeoutTimer?.invalidate()
-                reconnectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { [weak self] _ in
-                    guard let self = self else { return }
-                    if self.isReconnecting && !self.isConnected {
-                        print("❌ Quick reconnect failed - Spotify app needs to be opened")
-                        print("💡 Tip: Keep Spotify app running in background for best experience")
-                        self.isReconnecting = false
-                        self.reconnectAttempts = 0
-                    }
-                }
-                
-                // Attempt quick reconnect
-                attemptReconnect()
-            } else {
-                print("❌ No token available - user must login again")
-                isReconnecting = false
-            }
-        } else {
-            // Some other error - don't auto-reconnect
-            print("❌ Unexpected disconnect - user must login again")
-            isReconnecting = false
-        }
+        // DON'T auto-reconnect! Just let it disconnect.
+        // We'll reconnect on-demand when user tries to play next track
+        print("💡 Disconnected - will reconnect automatically when playing next track")
+        isReconnecting = false
+        reconnectAttempts = 0
     }
     
     private func attemptReconnect() {
