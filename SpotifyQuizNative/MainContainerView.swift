@@ -49,7 +49,6 @@ struct MainContainerView: View {
             print("🔍 MainContainerView appeared")
             print("   - isConnected: \(spotifyManager.isConnected)")
             print("   - hasValidToken: \(spotifyManager.hasValidToken())")
-            print("   - connectionToken: \(spotifyManager.connectionToken != nil ? "exists" : "nil")")
             print("   - hasSeenWelcome: \(hasSeenWelcome)")
             print("   - hasEverConnected: \(hasEverConnected)")
             
