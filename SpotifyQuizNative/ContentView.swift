@@ -50,9 +50,8 @@ struct ContentView: View {
             
             NavigationView {
                 VStack(spacing: 0) {
-                    // Only show main menu if connected
-                    if spotifyManager.isConnected {
-                        // Header with Beatster logo
+                    // Show playlist selection (will reconnect when starting game if needed)
+                    // Header with Beatster logo
                         VStack(spacing: 15) {
                             HStack(spacing: 2) {
                                 // Left waveform bars
