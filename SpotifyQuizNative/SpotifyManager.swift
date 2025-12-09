@@ -117,26 +117,10 @@ class SpotifyManager: NSObject, ObservableObject {
             return
         }
         
-        // Try to restore saved token if we don't have one in memory
-        if connectionToken == nil {
-            if let savedToken = UserDefaults.standard.string(forKey: tokenKey),
-               let expirationDate = UserDefaults.standard.object(forKey: tokenExpirationKey) as? Date,
-               Date() < expirationDate {
-                print("✓ Restoring saved token from UserDefaults")
-                connectionToken = savedToken
-                appRemote.connectionParameters.accessToken = savedToken
-            }
-        }
-        
-        // If we have a token but not connected, try to reconnect
-        if let token = connectionToken {
-            print("🔄 Have token but not connected - reconnecting...")
-            appRemote.connectionParameters.accessToken = token
-            isConnecting = true
-            appRemote.connect()
-        } else {
-            print("❌ No token available - waiting for user login")
-        }
+        // DON'T auto-reconnect on app becoming active
+        // Let the on-demand reconnection in playTrack() handle it when needed
+        // This prevents failed connection attempts when Spotify app isn't running
+        print("💡 Not connected - will reconnect when playing next track")
     }
     
     /// Set the connection token from OAuth callback
