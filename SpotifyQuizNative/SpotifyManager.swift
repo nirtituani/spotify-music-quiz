@@ -110,13 +110,26 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Check if we have a valid token
     func hasValidToken() -> Bool {
+        let hasSavedToken = UserDefaults.standard.string(forKey: tokenKey) != nil
+        let hasExpiration = UserDefaults.standard.object(forKey: tokenExpirationKey) as? Date != nil
+        
+        print("🔍 hasValidToken() check:")
+        print("   - hasSavedToken: \(hasSavedToken)")
+        print("   - hasExpiration: \(hasExpiration)")
+        print("   - connectionToken != nil: \(connectionToken != nil)")
+        
         guard let savedToken = UserDefaults.standard.string(forKey: tokenKey),
               let expirationDate = UserDefaults.standard.object(forKey: tokenExpirationKey) as? Date else {
+            print("   → Result: FALSE (no saved token or expiration)")
             return false
         }
         
         // Check if token is still valid
-        return Date() < expirationDate
+        let isValid = Date() < expirationDate
+        print("   - expirationDate: \(expirationDate)")
+        print("   - now: \(Date())")
+        print("   → Result: \(isValid ? "TRUE" : "FALSE (expired)")")
+        return isValid
     }
     
     /// Handle app becoming active - reconnect if needed

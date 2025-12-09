@@ -36,13 +36,22 @@ struct MainContainerView: View {
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
             }
+            // Fallback: This should never happen, but if all conditions are false, show login
+            else {
+                SpotifyConnectionView()
+                    .environmentObject(spotifyManager)
+                    .transition(.opacity)
+                    .zIndex(1)
+            }
         }
         .navigationBarHidden(true)
         .onAppear {
             print("🔍 MainContainerView appeared")
             print("   - isConnected: \(spotifyManager.isConnected)")
             print("   - hasValidToken: \(spotifyManager.hasValidToken())")
+            print("   - connectionToken: \(spotifyManager.connectionToken != nil ? "exists" : "nil")")
             print("   - hasSeenWelcome: \(hasSeenWelcome)")
+            print("   - hasEverConnected: \(hasEverConnected)")
             
             let needsWelcome = !hasSeenWelcome
             let needsLogin = !spotifyManager.isConnected && !spotifyManager.hasValidToken()
@@ -57,8 +66,10 @@ struct MainContainerView: View {
                 print("   → Showing Welcome screen")
             } else if needsLogin {
                 print("   → Showing Login screen")
-            } else {
+            } else if showGame {
                 print("   → Showing Game screen")
+            } else {
+                print("   → FALLBACK: Showing Login screen (unexpected state)")
             }
         }
         .onChange(of: spotifyManager.isConnected) { oldValue, newValue in
