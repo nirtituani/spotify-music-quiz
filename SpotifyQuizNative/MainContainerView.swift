@@ -18,13 +18,10 @@ struct MainContainerView: View {
             
             // Priority 1: Welcome screen (first time users)
             if needsWelcome {
-                WelcomeView(showWelcome: .constant(true))
+                WelcomeView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(2)
-                    .onDisappear {
-                        hasSeenWelcome = true
-                    }
             }
             // Priority 2: Login screen (after welcome, no valid token)
             else if needsLogin {
