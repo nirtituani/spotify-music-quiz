@@ -34,8 +34,14 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen if never connected OR token expired (after welcome is done)
-            if (!hasEverConnected || !spotifyManager.hasValidToken()) && (hasSeenWelcome || !showWelcome) {
+            // Show connection screen if:
+            // 1. Never connected before, OR
+            // 2. Token is expired
+            // BUT only show after welcome screen is done
+            let needsLogin = !hasEverConnected || !spotifyManager.hasValidToken()
+            let welcomeDone = hasSeenWelcome || !showWelcome
+            
+            if needsLogin && welcomeDone {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
@@ -44,11 +50,21 @@ struct MainContainerView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            print("MainContainerView appeared, isConnected: \(spotifyManager.isConnected)")
+            print("🔍 MainContainerView appeared")
+            print("   - isConnected: \(spotifyManager.isConnected)")
+            print("   - hasEverConnected: \(hasEverConnected)")
+            print("   - hasValidToken: \(spotifyManager.hasValidToken())")
+            print("   - hasSeenWelcome: \(hasSeenWelcome)")
+            print("   - showWelcome: \(showWelcome)")
             
             // Check if first time user
             if !hasSeenWelcome {
                 showWelcome = true
+                print("   → Showing Welcome screen")
+            } else if !hasEverConnected || !spotifyManager.hasValidToken() {
+                print("   → Should show Login screen")
+            } else {
+                print("   → Showing Game screen")
             }
         }
         .onChange(of: spotifyManager.isConnected) { oldValue, newValue in
