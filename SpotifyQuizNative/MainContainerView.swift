@@ -9,14 +9,14 @@ struct MainContainerView: View {
     
     var body: some View {
         ZStack {
-            // Main content - show GameModeView if user has ever connected
+            // Main content - show GameModeView if user has ever connected AND has valid token
             // Don't care about current connection status - we'll reconnect on-demand
-            if hasEverConnected {
+            if hasEverConnected && spotifyManager.hasValidToken() {
                 GameModeView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
             } else {
-                // Show dark blue background for first-time users
+                // Show dark blue background for first-time users or expired token
                 Color(red: 0.118, green: 0.141, blue: 0.200)
                     .ignoresSafeArea()
             }
@@ -34,8 +34,8 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen only if never connected before (after welcome is done)
-            if !hasEverConnected && (hasSeenWelcome || !showWelcome) {
+            // Show connection screen if never connected OR token expired (after welcome is done)
+            if (!hasEverConnected || !spotifyManager.hasValidToken()) && (hasSeenWelcome || !showWelcome) {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
