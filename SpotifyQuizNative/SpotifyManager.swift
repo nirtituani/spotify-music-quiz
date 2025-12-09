@@ -45,11 +45,28 @@ class SpotifyManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
-        // DON'T auto-restore token on init - wait for user action or app becoming active
         print("SpotifyManager initialized")
         
         // Configure audio session to keep connection alive
         configureAudioSession()
+        
+        // Restore token (but DON'T auto-connect)
+        // This allows hasValidToken() to work properly on app launch
+        if let savedToken = UserDefaults.standard.string(forKey: "SpotifyAccessToken"),
+           let expirationDate = UserDefaults.standard.object(forKey: "SpotifyTokenExpiration") as? Date {
+            
+            if Date() < expirationDate {
+                // Token is still valid - restore it
+                connectionToken = savedToken
+                print("✅ Restored valid token from storage (expires: \(expirationDate))")
+            } else {
+                // Token expired - clear it
+                print("⚠️ Saved token expired - clearing")
+                clearToken()
+            }
+        } else {
+            print("💡 No saved token found")
+        }
     }
     
     private func configureAudioSession() {
