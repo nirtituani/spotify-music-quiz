@@ -68,21 +68,28 @@ class SpotifyManager: NSObject, ObservableObject {
         // Stop any existing timer
         connectionKeepAliveTimer?.invalidate()
         
-        // Keep connection alive by periodically refreshing subscription
-        // This maintains an active channel with Spotify app
-        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: true) { [weak self] _ in
+        // Keep connection alive by actually interacting with Spotify app
+        // This prevents iOS from suspending it
+        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
             guard let self = self, self.appRemote.isConnected else { return }
             
-            // Just refresh the subscription - this is very lightweight
-            // but keeps the connection channel active
-            self.appRemote.playerAPI?.subscribe(toPlayerState: { _, _ in
-                // Silent refresh - no action needed
-            })
+            // ACTIVELY query player state - this wakes up Spotify app
+            // More aggressive than just subscribing
+            self.appRemote.playerAPI?.getPlayerState { result, error in
+                if error == nil {
+                    print("🔄 Keep-alive: Player state fetched successfully")
+                } else {
+                    print("⚠️ Keep-alive: Failed to fetch player state - \(error?.localizedDescription ?? "")")
+                }
+            }
             
-            print("🔄 Connection keep-alive ping (15s)")
+            // Also refresh subscription
+            self.appRemote.playerAPI?.subscribe(toPlayerState: { _, _ in })
+            
+            print("🔄 Connection keep-alive ping (10s)")
         }
         
-        print("✓ Connection keep-alive timer started (15s interval)")
+        print("✓ Connection keep-alive timer started (10s interval)")
     }
     
     private func stopConnectionKeepAlive() {
@@ -260,6 +267,10 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         reconnectTimeoutTimer?.invalidate()
         reconnectTimeoutTimer = nil
         
+        // Keep screen awake to prevent iOS from suspending Spotify app
+        UIApplication.shared.isIdleTimerDisabled = true
+        print("✓ Screen sleep disabled to keep Spotify active")
+        
         // Subscribe to player state updates
         appRemote.playerAPI?.delegate = self
         appRemote.playerAPI?.subscribe(toPlayerState: { result, error in
@@ -311,6 +322,9 @@ extension SpotifyManager: SPTAppRemoteDelegate {
         
         // Stop keep-alive timer
         stopConnectionKeepAlive()
+        
+        // Re-enable screen sleep
+        UIApplication.shared.isIdleTimerDisabled = false
         
         // Check if this is the "End of stream" error (Spotify app suspended)
         let nsError = error as NSError?
