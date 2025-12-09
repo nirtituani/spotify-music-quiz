@@ -487,7 +487,15 @@ class GameViewModel: ObservableObject {
     }
     
     private func playTrack(uri: String) {
-        spotifyManager?.playTrack(uri: uri)
+        print("📱 GameViewModel.playTrack() called with URI: \(uri)")
+        print("   - spotifyManager is nil: \(spotifyManager == nil)")
+        
+        if let manager = spotifyManager {
+            print("   - Calling spotifyManager.playTrack()")
+            manager.playTrack(uri: uri)
+        } else {
+            print("   ❌ ERROR: spotifyManager is nil! Cannot play track.")
+        }
     }
     
     private func startTimer() {
