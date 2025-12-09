@@ -9,20 +9,24 @@ struct MainContainerView: View {
     
     var body: some View {
         ZStack {
-            // Main content - show GameModeView if user has ever connected AND has valid token
-            // Don't care about current connection status - we'll reconnect on-demand
-            if hasEverConnected && spotifyManager.hasValidToken() {
+            // Determine what to show based on state
+            let needsWelcome = !hasSeenWelcome
+            let needsLogin = !spotifyManager.isConnected && !spotifyManager.hasValidToken()
+            let showGame = spotifyManager.hasValidToken() && hasSeenWelcome
+            
+            // Main content - show GameModeView only if welcome is done and we have token
+            if showGame {
                 GameModeView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
             } else {
-                // Show dark blue background for first-time users or expired token
+                // Show dark blue background
                 Color(red: 0.118, green: 0.141, blue: 0.200)
                     .ignoresSafeArea()
             }
             
-            // Onboarding screens
-            if showWelcome && !hasSeenWelcome {
+            // Onboarding screens - Priority 1: Welcome screen
+            if showWelcome && needsWelcome {
                 WelcomeView(showWelcome: $showWelcome)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
@@ -34,14 +38,8 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen if:
-            // 1. Never connected before, OR
-            // 2. Token is expired
-            // BUT only show after welcome screen is done
-            let needsLogin = !hasEverConnected || !spotifyManager.hasValidToken()
-            let welcomeDone = hasSeenWelcome || !showWelcome
-            
-            if needsLogin && welcomeDone {
+            // Priority 2: Login screen (after welcome is done)
+            if needsLogin && hasSeenWelcome {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
@@ -52,17 +50,25 @@ struct MainContainerView: View {
         .onAppear {
             print("🔍 MainContainerView appeared")
             print("   - isConnected: \(spotifyManager.isConnected)")
-            print("   - hasEverConnected: \(hasEverConnected)")
             print("   - hasValidToken: \(spotifyManager.hasValidToken())")
             print("   - hasSeenWelcome: \(hasSeenWelcome)")
             print("   - showWelcome: \(showWelcome)")
             
+            let needsWelcome = !hasSeenWelcome
+            let needsLogin = !spotifyManager.isConnected && !spotifyManager.hasValidToken()
+            let showGame = spotifyManager.hasValidToken() && hasSeenWelcome
+            
+            print("   Decision:")
+            print("   - needsWelcome: \(needsWelcome)")
+            print("   - needsLogin: \(needsLogin)")
+            print("   - showGame: \(showGame)")
+            
             // Check if first time user
-            if !hasSeenWelcome {
+            if needsWelcome {
                 showWelcome = true
-                print("   → Showing Welcome screen")
-            } else if !hasEverConnected || !spotifyManager.hasValidToken() {
-                print("   → Should show Login screen")
+                print("   → Showing Welcome screen first")
+            } else if needsLogin {
+                print("   → Showing Login screen")
             } else {
                 print("   → Showing Game screen")
             }
