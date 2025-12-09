@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @Binding var showWelcome: Bool
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
     @State private var waveformAnimation = false
     
     var body: some View {
@@ -75,8 +75,9 @@ struct WelcomeView: View {
                 
                 // Get Started button
                 Button(action: {
+                    print("✓ User clicked 'Get Started' - dismissing welcome screen")
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        showWelcome = false
+                        hasSeenWelcome = true
                     }
                 }) {
                     Text("Get Started")
@@ -127,6 +128,6 @@ struct WelcomeView: View {
 
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(showWelcome: .constant(true))
+        WelcomeView()
     }
 }

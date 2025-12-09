@@ -4,46 +4,40 @@ struct MainContainerView: View {
     @EnvironmentObject var spotifyManager: SpotifyManager
     @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
     @AppStorage("hasEverConnected") private var hasEverConnected = false
-    @State private var showWelcome = true
-    @State private var showConnectionScreen = false
     
     var body: some View {
         ZStack {
+            // Always show dark blue background
+            Color(red: 0.118, green: 0.141, blue: 0.200)
+                .ignoresSafeArea()
+            
             // Determine what to show based on state
             let needsWelcome = !hasSeenWelcome
             let needsLogin = !spotifyManager.isConnected && !spotifyManager.hasValidToken()
             let showGame = spotifyManager.hasValidToken() && hasSeenWelcome
             
-            // Main content - show GameModeView only if welcome is done and we have token
-            if showGame {
-                GameModeView()
-                    .environmentObject(spotifyManager)
-                    .transition(.opacity)
-            } else {
-                // Show dark blue background
-                Color(red: 0.118, green: 0.141, blue: 0.200)
-                    .ignoresSafeArea()
-            }
-            
-            // Onboarding screens - Priority 1: Welcome screen
-            if showWelcome && needsWelcome {
-                WelcomeView(showWelcome: $showWelcome)
+            // Priority 1: Welcome screen (first time users)
+            if needsWelcome {
+                WelcomeView(showWelcome: .constant(true))
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(2)
-                    .onChange(of: showWelcome) { oldValue, newValue in
-                        if !newValue {
-                            hasSeenWelcome = true
-                        }
+                    .onDisappear {
+                        hasSeenWelcome = true
                     }
             }
-            
-            // Priority 2: Login screen (after welcome is done)
-            if needsLogin && hasSeenWelcome {
-                SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
+            // Priority 2: Login screen (after welcome, no valid token)
+            else if needsLogin {
+                SpotifyConnectionView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(1)
+            }
+            // Priority 3: Game screen (has valid token and seen welcome)
+            else if showGame {
+                GameModeView()
+                    .environmentObject(spotifyManager)
+                    .transition(.opacity)
             }
         }
         .navigationBarHidden(true)
@@ -52,7 +46,6 @@ struct MainContainerView: View {
             print("   - isConnected: \(spotifyManager.isConnected)")
             print("   - hasValidToken: \(spotifyManager.hasValidToken())")
             print("   - hasSeenWelcome: \(hasSeenWelcome)")
-            print("   - showWelcome: \(showWelcome)")
             
             let needsWelcome = !hasSeenWelcome
             let needsLogin = !spotifyManager.isConnected && !spotifyManager.hasValidToken()
@@ -63,10 +56,8 @@ struct MainContainerView: View {
             print("   - needsLogin: \(needsLogin)")
             print("   - showGame: \(showGame)")
             
-            // Check if first time user
             if needsWelcome {
-                showWelcome = true
-                print("   → Showing Welcome screen first")
+                print("   → Showing Welcome screen")
             } else if needsLogin {
                 print("   → Showing Login screen")
             } else {

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SpotifyConnectionView: View {
     @EnvironmentObject var spotifyManager: SpotifyManager
-    @Binding var showConnectionScreen: Bool
     
     var body: some View {
         ZStack {
@@ -39,6 +38,7 @@ struct SpotifyConnectionView: View {
                 VStack(spacing: 20) {
                     // Connect with Spotify button
                     Button(action: {
+                        print("✓ User clicked 'Connect with Spotify' - starting authorization")
                         spotifyManager.authorize()
                     }) {
                         HStack(spacing: 12) {
@@ -58,26 +58,8 @@ struct SpotifyConnectionView: View {
                         .shadow(color: Color(red: 0.11, green: 0.93, blue: 0.53).opacity(0.4), radius: 20, x: 0, y: 10)
                     }
                     .padding(.horizontal, 40)
-                    
-                    // Skip for now button
-                    Button(action: {
-                        withAnimation {
-                            showConnectionScreen = false
-                        }
-                    }) {
-                        Text("or Skip for now")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.white.opacity(0.6))
-                    }
                 }
                 .padding(.bottom, 80)
-            }
-        }
-        .onChange(of: spotifyManager.isConnected) { oldValue, newValue in
-            if newValue {
-                withAnimation {
-                    showConnectionScreen = false
-                }
             }
         }
     }
@@ -85,7 +67,7 @@ struct SpotifyConnectionView: View {
 
 struct SpotifyConnectionView_Previews: PreviewProvider {
     static var previews: some View {
-        SpotifyConnectionView(showConnectionScreen: .constant(true))
+        SpotifyConnectionView()
             .environmentObject(SpotifyManager.shared)
     }
 }
