@@ -14,6 +14,11 @@ struct SpotifyQuizNativeApp: App {
                     .onOpenURL { url in
                         handleURL(url)
                     }
+                    .onAppear {
+                        print("🚀 ========================================")
+                        print("🚀 APP LAUNCHED! CONSOLE IS WORKING!")
+                        print("🚀 ========================================")
+                    }
             }
             .navigationViewStyle(StackNavigationViewStyle())
         }

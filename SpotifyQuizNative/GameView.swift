@@ -383,7 +383,11 @@ struct GameView: View {
             Text(viewModel.errorMessage)
         }
         .onAppear {
+            print("🎮 ========================================")
+            print("🎮 GAMEVIEW APPEARED!")
+            print("🎮 ========================================")
             viewModel.spotifyManager = spotifyManager
+            print("✅ spotifyManager assigned to viewModel")
         }
     }
 }
