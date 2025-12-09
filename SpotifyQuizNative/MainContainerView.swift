@@ -9,13 +9,14 @@ struct MainContainerView: View {
     
     var body: some View {
         ZStack {
-            // Main content - show GameModeView when connected OR if reconnecting
-            if spotifyManager.isConnected || (spotifyManager.isReconnecting && hasEverConnected) {
+            // Main content - show GameModeView if user has ever connected
+            // Don't care about current connection status - we'll reconnect on-demand
+            if hasEverConnected {
                 GameModeView()
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
             } else {
-                // Show dark blue background when not connected
+                // Show dark blue background for first-time users
                 Color(red: 0.118, green: 0.141, blue: 0.200)
                     .ignoresSafeArea()
             }
@@ -33,28 +34,12 @@ struct MainContainerView: View {
                     }
             }
             
-            // Show connection screen when not connected AND not reconnecting (after welcome is done)
-            if !spotifyManager.isConnected && !spotifyManager.isReconnecting && (hasSeenWelcome || !showWelcome) {
+            // Show connection screen only if never connected before (after welcome is done)
+            if !hasEverConnected && (hasSeenWelcome || !showWelcome) {
                 SpotifyConnectionView(showConnectionScreen: $showConnectionScreen)
                     .environmentObject(spotifyManager)
                     .transition(.opacity)
                     .zIndex(1)
-            }
-            
-            // Show reconnecting indicator when reconnecting
-            if spotifyManager.isReconnecting && hasEverConnected {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .tint(Color(red: 1.0, green: 0.0, blue: 0.4))
-                    
-                    Text("Reconnecting to Spotify...")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.white)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(red: 0.118, green: 0.141, blue: 0.200).opacity(0.95))
-                .zIndex(3)
             }
         }
         .navigationBarHidden(true)
