@@ -68,28 +68,37 @@ class SpotifyManager: NSObject, ObservableObject {
         // Stop any existing timer
         connectionKeepAliveTimer?.invalidate()
         
-        // Keep connection alive by actually interacting with Spotify app
-        // This prevents iOS from suspending it
-        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+        // WORKAROUND for Spotify App Remote SDK limitation:
+        // The SDK disconnects after 30 seconds of no playback
+        // Solution: Resume playback briefly every 25 seconds
+        // Source: https://community.spotify.com/t5/Spotify-for-Developers/iOS-amp-Android-Remote-SDK-loses-connection-after-paused-for-30s/td-p/7077461
+        
+        connectionKeepAliveTimer = Timer.scheduledTimer(withTimeInterval: 25.0, repeats: true) { [weak self] _ in
             guard let self = self, self.appRemote.isConnected else { return }
             
-            // ACTIVELY query player state - this wakes up Spotify app
-            // More aggressive than just subscribing
+            // Check if music is currently paused
             self.appRemote.playerAPI?.getPlayerState { result, error in
-                if error == nil {
-                    print("🔄 Keep-alive: Player state fetched successfully")
-                } else {
-                    print("⚠️ Keep-alive: Failed to fetch player state - \(error?.localizedDescription ?? "")")
+                if let playerState = result as? SPTAppRemotePlayerState {
+                    if playerState.isPaused {
+                        print("🔄 Keep-alive: Music paused, doing brief resume/pause to prevent disconnect")
+                        
+                        // Resume for a tiny moment
+                        self.appRemote.playerAPI?.resume({ _, _ in
+                            // Immediately pause again after 100ms
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                self.appRemote.playerAPI?.pause({ _, _ in
+                                    print("✓ Keep-alive: Brief resume/pause cycle complete")
+                                })
+                            }
+                        })
+                    } else {
+                        print("🔄 Keep-alive: Music playing, no action needed")
+                    }
                 }
             }
-            
-            // Also refresh subscription
-            self.appRemote.playerAPI?.subscribe(toPlayerState: { _, _ in })
-            
-            print("🔄 Connection keep-alive ping (10s)")
         }
         
-        print("✓ Connection keep-alive timer started (10s interval)")
+        print("✓ Connection keep-alive timer started (25s interval - prevents 30s disconnect)")
     }
     
     private func stopConnectionKeepAlive() {
