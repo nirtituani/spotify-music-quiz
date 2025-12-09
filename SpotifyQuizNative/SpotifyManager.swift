@@ -169,6 +169,10 @@ class SpotifyManager: NSObject, ObservableObject {
     
     /// Play a track by Spotify URI
     func playTrack(uri: String, completion: ((Bool) -> Void)? = nil) {
+        print("🎵 playTrack called with URI: \(uri)")
+        print("   - isConnected: \(appRemote.isConnected)")
+        print("   - hasToken: \(connectionToken != nil)")
+        
         // If not connected, reconnect first
         if !appRemote.isConnected {
             print("🔄 Not connected - reconnecting before playing track...")
@@ -182,6 +186,7 @@ class SpotifyManager: NSObject, ObservableObject {
             // Reconnect and then play
             appRemote.connectionParameters.accessToken = token
             isConnecting = true
+            print("   → Starting reconnection process...")
             
             // Wait for connection to establish
             var connectionObserver: NSObjectProtocol?
@@ -190,6 +195,7 @@ class SpotifyManager: NSObject, ObservableObject {
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
+                print("   ✓ Received SpotifyConnected notification")
                 // Remove observer
                 if let observer = connectionObserver {
                     NotificationCenter.default.removeObserver(observer)
@@ -201,6 +207,7 @@ class SpotifyManager: NSObject, ObservableObject {
             
             // Try to connect
             appRemote.connect()
+            print("   → Called appRemote.connect()")
             
             // Set timeout
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
@@ -209,7 +216,8 @@ class SpotifyManager: NSObject, ObservableObject {
                 }
                 
                 if self?.appRemote.isConnected == false {
-                    print("⚠️ Reconnection timeout")
+                    print("⚠️ Reconnection timeout - failed to connect within 5 seconds")
+                    self?.isConnecting = false
                     completion?(false)
                 }
             }
@@ -218,13 +226,17 @@ class SpotifyManager: NSObject, ObservableObject {
         }
         
         // Already connected, play directly
+        print("   ✓ Already connected - playing directly")
         playTrackAfterConnection(uri: uri, completion: completion)
     }
     
     private func playTrackAfterConnection(uri: String, completion: ((Bool) -> Void)?) {
+        print("   → playTrackAfterConnection called")
+        print("   → Calling appRemote.playerAPI?.play(\(uri))")
+        
         appRemote.playerAPI?.play(uri, callback: { [weak self] result, error in
             if let error = error {
-                print("Error playing track: \(error.localizedDescription)")
+                print("❌ Error playing track: \(error.localizedDescription)")
                 completion?(false)
             } else {
                 print("✅ Successfully started playing: \(uri)")
