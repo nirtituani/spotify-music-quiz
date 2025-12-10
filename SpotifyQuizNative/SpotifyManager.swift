@@ -235,7 +235,8 @@ class SpotifyManager: NSObject, ObservableObject {
             // SOLUTION: Open Spotify app first by calling authorizeAndPlayURI with the track we want
             // This wakes up the Spotify app and establishes connection in one step
             print("   → Opening Spotify app and connecting...")
-            appRemote.authorizeAndPlayURI(uri, asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
+            let scopes = ["app-remote-control", "user-read-private", "playlist-read-private"]
+            appRemote.authorizeAndPlayURI(uri, asRadio: false, additionalScopes: scopes) { [weak self] success in
                 if success {
                     print("✅ Successfully reconnected and started playing track!")
                     self?.isConnecting = false
