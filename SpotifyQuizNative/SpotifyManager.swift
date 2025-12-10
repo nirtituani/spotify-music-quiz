@@ -47,6 +47,9 @@ class SpotifyManager: NSObject, ObservableObject {
         super.init()
         print("SpotifyManager initialized")
         
+        // 🧹 UNCOMMENT THIS LINE TO RESET APP AND TEST FRESH LOGIN:
+        // resetAppData()
+        
         // Configure audio session to keep connection alive
         configureAudioSession()
         
@@ -67,6 +70,18 @@ class SpotifyManager: NSObject, ObservableObject {
         } else {
             print("💡 No saved token found")
         }
+    }
+    
+    /// Reset all app data - for testing only
+    private func resetAppData() {
+        UserDefaults.standard.removeObject(forKey: "hasSeenWelcome")
+        UserDefaults.standard.removeObject(forKey: "hasEverConnected")
+        UserDefaults.standard.removeObject(forKey: "SpotifyAccessToken")
+        UserDefaults.standard.removeObject(forKey: "SpotifyTokenExpiration")
+        connectionToken = nil
+        print("🧹 ========================================")
+        print("🧹 RESET: All app data cleared!")
+        print("🧹 ========================================")
     }
     
     private func configureAudioSession() {
