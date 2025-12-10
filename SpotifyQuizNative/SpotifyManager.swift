@@ -220,7 +220,7 @@ class SpotifyManager: NSObject, ObservableObject {
         
         // If not connected, reconnect first
         if !appRemote.isConnected {
-            print("🔄 Not connected - reconnecting before playing track...")
+            print("🔄 Not connected - need to wake up Spotify app and reconnect...")
             
             guard let token = connectionToken else {
                 print("❌ No token available - cannot play track")
@@ -228,40 +228,20 @@ class SpotifyManager: NSObject, ObservableObject {
                 return
             }
             
-            // Reconnect and then play
+            // Set token for connection
             appRemote.connectionParameters.accessToken = token
             isConnecting = true
-            print("   → Starting reconnection process...")
             
-            // Wait for connection to establish
-            var connectionObserver: NSObjectProtocol?
-            connectionObserver = NotificationCenter.default.addObserver(
-                forName: NSNotification.Name("SpotifyConnected"),
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                print("   ✓ Received SpotifyConnected notification")
-                // Remove observer
-                if let observer = connectionObserver {
-                    NotificationCenter.default.removeObserver(observer)
-                }
-                
-                // Now play the track
-                self?.playTrackAfterConnection(uri: uri, completion: completion)
-            }
-            
-            // Try to connect
-            appRemote.connect()
-            print("   → Called appRemote.connect()")
-            
-            // Set timeout
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
-                if let observer = connectionObserver {
-                    NotificationCenter.default.removeObserver(observer)
-                }
-                
-                if self?.appRemote.isConnected == false {
-                    print("⚠️ Reconnection timeout - failed to connect within 5 seconds")
+            // SOLUTION: Open Spotify app first by calling authorizeAndPlayURI with the track we want
+            // This wakes up the Spotify app and establishes connection in one step
+            print("   → Opening Spotify app and connecting...")
+            appRemote.authorizeAndPlayURI(uri, asRadio: false, additionalScopes: requestedScopes) { [weak self] success in
+                if success {
+                    print("✅ Successfully reconnected and started playing track!")
+                    self?.isConnecting = false
+                    completion?(true)
+                } else {
+                    print("❌ Failed to reconnect and play track")
                     self?.isConnecting = false
                     completion?(false)
                 }
